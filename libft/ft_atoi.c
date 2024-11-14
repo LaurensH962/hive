@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/30 16:06:51 by lhaas             #+#    #+#             */
-/*   Updated: 2024/11/08 11:50:22 by lhaas            ###   ########.fr       */
+/*   Updated: 2024/11/14 11:25:44 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,15 +36,15 @@ int	ft_atoi(const char *nptr)
 	return (res * sign);
 }
 
-/* #include <stdio.h>
+ #include <stdio.h>
 #include <stdlib.h>
 
 int	main(void)
 {
-	char	s[] = "\t\n\r\v\f  469 \n";
+	char	s[] = "2312323999888213123213123";
 
 	printf("%d\n", ft_atoi(s));
 	printf("%d\n", atoi(s));
 	return (0);
 }
- */
+
