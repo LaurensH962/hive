@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/14 10:02:20 by lhaas             #+#    #+#             */
-/*   Updated: 2024/11/20 12:33:17 by lhaas            ###   ########.fr       */
+/*   Created: 2024/11/20 12:34:22 by lhaas             #+#    #+#             */
+/*   Updated: 2024/11/20 13:57:36 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -33,19 +33,21 @@ char	*ft_strjoin(char *s1, char *s2)
 
 struct elements	find_line(t_elems els, int fd)
 {
-	static char	*remainder;
+	static char	*remainder[1024];
 
-	if (remainder)
-		els.line = remainder;
+	if (fd < 0 || fd >= 1024)
+		return (els);
+	if (remainder[fd])
+		els.line = remainder[fd];
 	else
 		els.line = ft_strdup("");
-	remainder = NULL;
+	remainder[fd] = NULL;
 	while (els.bytes_read > 0)
 	{
 		els.newline_pos = ft_strchr(els.line, '\n');
 		if (els.newline_pos != NULL)
 		{
-			remainder = ft_strdup(els.newline_pos + 1);
+			remainder[fd] = ft_strdup(els.newline_pos + 1);
 			*(els.newline_pos + 1) = '\0';
 			break ;
 		}
@@ -63,7 +65,7 @@ char	*get_next_line(int fd)
 	t_elems	els;
 
 	els.bytes_read = 1;
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || fd >= 1024 || BUFFER_SIZE <= 0)
 		return (NULL);
 	els.buffer = (char *)malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!els.buffer)
@@ -77,16 +79,23 @@ char	*get_next_line(int fd)
 /* int	main(int argc, char **argv)
 {
 	int		fd;
+	int		fd1;
 	char	*line;
 
 	if (argc == 1) // No arguments, use stdin
 	{
 		fd = STDIN_FILENO; // File descriptor for stdin
 	}
-	else if (argc == 2) // File provided
+	else if (argc == 3) // File provided
 	{
 		fd = open(argv[1], O_RDONLY);
 		if (fd == -1)
+		{
+			perror("Error opening file");
+			return (1);
+		}
+		fd1 = open(argv[2], O_RDONLY);
+		if (fd1 == -1)
 		{
 			perror("Error opening file");
 			return (1);
@@ -98,11 +107,11 @@ char	*get_next_line(int fd)
 		return (1);
 	}
 	// Read lines using get_next_line
-	while ((line = get_next_line(fd)) != NULL)
-	{
-		printf("%s", line);
-		free(line);
-	}
+	printf("%s", line = get_next_line(fd));
+	printf("%s", line = get_next_line(fd1));
+	printf("%s", line = get_next_line(fd));
+	printf("%s", line = get_next_line(fd1));
+	free(line);
 	if (!(line = get_next_line(fd)))
 	{
 		printf("%s", line);
