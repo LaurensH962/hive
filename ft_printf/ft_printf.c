@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 11:10:22 by lhaas             #+#    #+#             */
-/*   Updated: 2024/11/26 10:30:54 by lhaas            ###   ########.fr       */
+/*   Updated: 2024/11/26 17:19:45 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,16 +16,23 @@
 int	ft_putstr(char *s, int count)
 {
 	size_t	i;
+	int	ret;
 
 	if (!s)
 	{
-		count += write(1, "(null)", 6);
+		ret = write(1, "(null)", 6);
+		if (ret == -1)
+			return (-1);
+		count += ret;
 		return (count);
 	}
 	i = 0;
 	while (s[i])
 	{
-		count += write(1, &s[i], 1);
+		ret = write(1, &s[i], 1);
+		if (ret == -1)
+			return (-1);
+		count += ret;
 		i++;
 	}
 	return (count);
@@ -48,37 +55,22 @@ int	check_specifier(const char str_c, va_list args, int count)
 	else if (str_c == 'c')
 		count = ft_putchar(va_arg(args, int), count);
 	else if (str_c == '%')
-		count += write(1, "%", 1);
+	{
+		if (write(1, "%", 1) == -1)
+			return (-1);
+		count++;
+	}
 	return (count);
 }
 
-/* int	ft_printf(const char *str, ...)
+int	is_specif(const char str_c)
 {
-	va_list	args;
-	int		count;
-	int		i;
-
-	va_start(args, str);
-	i = 0;
-	count = 0;
-	if (!str)
-		return (-1);
-	while (str[i] != '\0')
-	{
-		if (str[i] == '%')
-		{
-			if ((count = check_specifier(str[i + 1], args, count)) > 0)
-				i++;
-			else
-				count = ft_putchar(str[i], count);
-		}
-		else
-			count = ft_putchar(str[i], count);
-		i++;
-	}
-	va_end(args);
-	return (count);
-} */
+	if (str_c == 'd' || str_c == 'i' || str_c == 'x' || str_c == 'X'
+		|| str_c == 'u' || str_c == 'p' || str_c == 's' || str_c == 'c'
+		|| str_c == '%')
+		return (1);
+	return (0);
+}
 
 int	ft_printf(const char *str, ...)
 {
@@ -93,176 +85,153 @@ int	ft_printf(const char *str, ...)
 		return (-1);
 	while (str[i] != '\0')
 	{
-		if (str[i] == '%' && str[i + 1])
+		if (str[i] == '%' && is_specif(str[i + 1]))
 			count = check_specifier(str[++i], args, count);
 		else
 			count = ft_putchar(str[i], count);
+		if (count == -1)
+			break ;
 		i++;
 	}
 	va_end(args);
 	return (count);
 }
 
-/* #include <limits.h>
-int	main(void)
-{
-	char			*str;
-	char			*str2;
-	unsigned int	nbr;
-	char			c;
-	char			count;
-
-	str = "1234567";
-	str2 = "11";
-	nbr = 4294967295;
-	c = 'c';
-	count = ft_printf(" %X ", INT_MAX);
-	ft_printf("%d\n", count);
-	count = printf(" %X ", INT_MAX);
-	printf("%d\n", count);
-	return (0);
-} */
-
-/* #include<stdio.h>
 #include <limits.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 
-int main()
+int	main(void)
 {
-    int count;
-    int realcount;
-    int x = 42;
+	int	count;
+	int	realcount;
+	int	x;
+	int	*ptr;
 
-    printf("\t<------ CHARACTER ----->\n");
-       count = ft_printf("Char: %c\n", 'A');
-    realcount =printf("Char: %c\n", 'A');
-
-    ft_printf("Returned count: %d\n", count);
-      printf("Returned realcount: %d\n", realcount);
-    ft_printf("Null character: %c\n", '\0');
-     printf("Null character: %c\n", '\0');
-
-    ft_printf("ASCII 0: %c, ASCII 127: %c\n", 0, 127);
-    ft_printf("ASCII 0: %c, ASCII 127: %c\n", 0, 127);
-
+	x = 42;
+	printf("\t<------ CHARACTER ----->\n");
+	count = ft_printf("Char: %c\n", 'A');
+	realcount = printf("Char: %c\n", 'A');
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
+	ft_printf("Null character: %c\n", '\0');
+	printf("Null character: %c\n", '\0');
+	ft_printf("ASCII 0: %c, ASCII 127: %c\n", 0, 127);
+	ft_printf("ASCII 0: %c, ASCII 127: %c\n", 0, 127);
 	printf("\t<------ STRING ----->\n");
-
-
-    count = ft_printf("Hello, World!\n");
-    realcount = printf("Hello, World!\n");
-
-    ft_printf("Returned count: %d\n", count);
-     printf("Returned realcount: %d\n", realcount);
-
+	count = ft_printf("Hello, World!\n");
+	realcount = printf("Hello, World!\n");
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
 	count = 0;
 	realcount = 0;
-
 	count = ft_printf("Empty string: '%s'\n", "");
-	 realcount = ft_printf("Empty string: '%s'\n", "");
+	realcount = ft_printf("Empty string: '%s'\n", "");
 	ft_printf("Returned count: %d\n", count);
-     printf("Returned realcount: %d\n", realcount);
-     count = 0;
+	printf("Returned realcount: %d\n", realcount);
+	count = 0;
 	realcount = 0;
-
-	count = ft_printf("&&^^@@Long string: %c %s\n",  225, " This is a really long string to test if your ft_printf handles large inputs properly aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-	realcount = printf("&&^^@@Long string: %c %s\n",  225, " This is a really long string to test if your ft_printf handles large inputs properly aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-ft_printf("Returned count: %d\n", count);
-     printf("Returned realcount: %d\n", realcount);
+	count = ft_printf("&&^^@@Long string: %c %s\n", 225,
+			" This is a really long string to test if your ft_printf handles large inputs properly aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+	realcount = printf("&&^^@@Long string: %c %s\n", 225,
+			" This is a really long string to test if your ft_printf handles large inputs properly aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
 	printf("\t<------ INTEGER ----->\n");
-
-    count = ft_printf("Integer: %d\n", 42);
-    realcount = printf("Integer: %d\n", 42);
-
-    ft_printf("Returned count: %d\n", count);
-     printf("Returned realcount: %d\n", realcount);
-
- 	ft_printf("Positive: %d, Negative: %d\n", 123, -123);
+	count = ft_printf("Integer: %d\n", 42);
+	realcount = printf("Integer: %d\n", 42);
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
+	ft_printf("Positive: %d, Negative: %d\n", 123, -123);
 	printf("Positive: %d, Negative: %d\n", 123, -123);
-
 	ft_printf("Zero: %d\n", 0);
 	printf("Zero: %d\n", 0);
-
 	ft_printf("INT_MAX: %d, INT_MIN: %d\n", INT_MAX, INT_MIN);
 	printf("INT_MAX: %d, INT_MIN: %d\n", INT_MAX, INT_MIN);
-
 	printf("\t<------ UNSIGNED INTEGER ----->\n");
-
 	ft_printf("Unsigned: %u\n", 123);
 	printf("Unsigned: %u\n", 123);
-
 	ft_printf("Unsigned zero: %u\n", 0);
 	printf("Unsigned zero: %u\n", 0);
-
 	ft_printf("UINT_MAX: %u\n", UINT_MAX);
 	printf("UINT_MAX: %u\n", UINT_MAX);
-
-
-
-
-
-
-
 	printf("\t<------ HEXADECIMAL ----->\n");
-
-    count = ft_printf("Hexadecimal: %x\n", 255);
-    realcount = printf("Hexadecimal: %x\n", 255);
-
-    ft_printf("Returned count: %d\n", count);
-    printf("Returned realcount: %d\n", realcount);
-
-
-    count = ft_printf("Hexadecimal: %X\n", 255);
-    realcount = printf("Hexadecimal: %X\n", 255);
-
-    ft_printf("Returned count: %d\n", count);
-    printf("Returned realcount: %d\n", realcount);
-
-    ft_printf("Hex zero: %x, %X\n", 0, 0);
+	count = ft_printf("Hexadecimal: %x\n", 255);
+	realcount = printf("Hexadecimal: %x\n", 255);
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
+	count = ft_printf("Hexadecimal: %X\n", 255);
+	realcount = printf("Hexadecimal: %X\n", 255);
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
+	ft_printf("Hex zero: %x, %X\n", 0, 0);
 	printf("Hex zero: %x, %X\n", 0, 0);
-
 	ft_printf("Hex UINT_MAX: %x, %X\n", UINT_MAX, UINT_MAX);
 	printf("Hex UINT_MAX: %x, %X\n", UINT_MAX, UINT_MAX);
-
 	ft_printf("Large hex value: %x\n", 0xdeadbeef);
 	printf("Large hex value: %x\n", 0xdeadbeef);
-
 	printf("\t<------ PERCENT ----->\n");
 	ft_printf("Percent: %%/n");
 	printf("Percent: %%/n");
-
-
-
 	ft_printf("Many percent signs: %% %% %%\n");
 	printf("Many percent signs: %% %% %%\n");
-
-
 	printf("\t<------ COMPLEX CASES ----->\n");
-
 	ft_printf("Char: %c, String: %s, Pointer: %p\n", 'A', "Test", &x);
-	ft_printf("Int: %d, Unsigned: %u, Hex: %x, Hex Upper: %X, Percent: %%\n", 42, 42, 42, 42);
+	ft_printf("Int: %d, Unsigned: %u, Hex: %x, Hex Upper: %X, Percent: %%\n",
+		42, 42, 42, 42);
 	printf("Char: %c, String: %s, Pointer: %p\n", 'A', "Test", &x);
-		printf("Int: %d, Unsigned: %u, Hex: %x, Hex Upper: %X, Percent: %%\n", 42, 42, 42, 42);
-
-
+	printf("Int: %d, Unsigned: %u, Hex: %x, Hex Upper: %X, Percent: %%\n", 42,
+		42, 42, 42);
 	printf("\t<------ POINTER ----->\n");
-
-    int *ptr = NULL;
-    count = ft_printf("Pointer: %p\n", ptr);
-    realcount = printf("Pointer: %p\n", ptr);
-   ft_printf("Returned count: %d\n", count);
-    printf("Returned realcount: %d\n", realcount);
-
-
+	ptr = NULL;
+	count = ft_printf("Pointer: %p\n", ptr);
+	realcount = printf("Pointer: %p\n", ptr);
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
 	ft_printf("Pointer: %p\n", &x);
 	printf("Pointer: %p\n", &x);
-
 	ft_printf("Pointer at zero: %p\n", (void *)0);
 	printf("Pointer at zero: %p\n", (void *)0);
+	printf("%%");
+	printf("moi\n\n\n");
 
-			printf("%%");
-			printf("moi");
+
+char *message = "This should fail to print\n";
+
+    // Print the start of the write failure test
+    printf("\n<------ WRITE FAILURE TEST ----->\n");
+
+    // Step 1: Close the STDOUT file descriptor to simulate a write failure
+    close(STDOUT_FILENO);
+
+    // Step 2: Attempt to directly write to STDOUT using write(1, ...)
+    count = write(STDOUT_FILENO, message, 27);  // Message length is 27
+
+    // Step 3: Check if write fails
+    if (count == -1) {
+        // If write fails, it will return -1, indicating an error.
+        printf("Error: Write failed as expected\n");
+    } else {
+        // If it does not fail, print this unexpected behavior message.
+        printf("Unexpected behavior: write did not fail\n");
+    }
+
+    // Step 4: Restore STDOUT by opening a new file descriptor (e.g., /dev/tty)
+    int fd = open("/dev/tty", O_WRONLY);  // Open a valid file descriptor (TTY)
+    if (fd == -1) {
+        // If opening /dev/tty fails, print an error message
+        printf("Failed to reopen stdout\n");
+        return -1;
+    }
+    dup2(fd, STDOUT_FILENO);  // Redirect STDOUT to the TTY
+    close(fd);  // Close the temporary file descriptor used for redirection
+
+    // Step 5: After restoring STDOUT, print something to ensure it's working
+    printf("Testing after restoring stdout.\n");
 
     return 0;
 }
- */
+
