@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/21 11:10:22 by lhaas             #+#    #+#             */
-/*   Updated: 2024/11/26 17:19:45 by lhaas            ###   ########.fr       */
+/*   Updated: 2024/11/29 09:35:11 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,8 @@ int	ft_printf(const char *str, ...)
 	{
 		if (str[i] == '%' && is_specif(str[i + 1]))
 			count = check_specifier(str[++i], args, count);
+		else if(str[i] == '%' && !str [i + 1])
+			count = -1;
 		else
 			count = ft_putchar(str[i], count);
 		if (count == -1)
@@ -97,7 +99,7 @@ int	ft_printf(const char *str, ...)
 	return (count);
 }
 
-#include <limits.h>
+/* #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -174,10 +176,12 @@ int	main(void)
 	ft_printf("Large hex value: %x\n", 0xdeadbeef);
 	printf("Large hex value: %x\n", 0xdeadbeef);
 	printf("\t<------ PERCENT ----->\n");
-	ft_printf("Percent: %%/n");
-	printf("Percent: %%/n");
-	ft_printf("Many percent signs: %% %% %%\n");
-	printf("Many percent signs: %% %% %%\n");
+	ft_printf("Percent: %%\n");
+	printf("Percent: %%\n");
+	count = ft_printf("Many percent signs: %% %% %%\n%");
+	realcount = printf("Many percent signs: %% %% %%\n%");
+	ft_printf("Returned count: %d\n", count);
+	printf("Returned realcount: %d\n", realcount);
 	printf("\t<------ COMPLEX CASES ----->\n");
 	ft_printf("Char: %c, String: %s, Pointer: %p\n", 'A', "Test", &x);
 	ft_printf("Int: %d, Unsigned: %u, Hex: %x, Hex Upper: %X, Percent: %%\n",
@@ -198,40 +202,14 @@ int	main(void)
 	printf("%%");
 	printf("moi\n\n\n");
 
-
-char *message = "This should fail to print\n";
-
-    // Print the start of the write failure test
-    printf("\n<------ WRITE FAILURE TEST ----->\n");
-
-    // Step 1: Close the STDOUT file descriptor to simulate a write failure
-    close(STDOUT_FILENO);
-
-    // Step 2: Attempt to directly write to STDOUT using write(1, ...)
-    count = write(STDOUT_FILENO, message, 27);  // Message length is 27
-
-    // Step 3: Check if write fails
-    if (count == -1) {
-        // If write fails, it will return -1, indicating an error.
-        printf("Error: Write failed as expected\n");
-    } else {
-        // If it does not fail, print this unexpected behavior message.
-        printf("Unexpected behavior: write did not fail\n");
-    }
-
-    // Step 4: Restore STDOUT by opening a new file descriptor (e.g., /dev/tty)
-    int fd = open("/dev/tty", O_WRONLY);  // Open a valid file descriptor (TTY)
-    if (fd == -1) {
-        // If opening /dev/tty fails, print an error message
-        printf("Failed to reopen stdout\n");
-        return -1;
-    }
-    dup2(fd, STDOUT_FILENO);  // Redirect STDOUT to the TTY
-    close(fd);  // Close the temporary file descriptor used for redirection
-
-    // Step 5: After restoring STDOUT, print something to ensure it's working
-    printf("Testing after restoring stdout.\n");
+int ret;
+int ret_ft;
+int original_stdout = dup(STDOUT_FILENO);
+    fclose(stdout);
+    ret = printf("test\n");
+    ret_ft = ft_printf("test\n");
+    stdout = (FILE *)fdopen(original_stdout, "w");
+    printf ("%d\n%d", ret, ret_ft);
 
     return 0;
-}
-
+} */
