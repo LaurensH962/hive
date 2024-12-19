@@ -60,6 +60,7 @@ struct elements	find_line(t_elems els, int fd)
 	return (els);
 }
 
+
 char	*get_next_line(int fd)
 {
 	t_elems	els;
@@ -76,7 +77,13 @@ char	*get_next_line(int fd)
 	return (free(els.buffer), els.line);
 }
 
-/* int	main(int argc, char **argv)
+/*
+#include "get_next_line_bonus.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+
+ int	main(int argc, char **argv)
 {
 	int		fd;
 	int		fd1;
