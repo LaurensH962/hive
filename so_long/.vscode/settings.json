@@ -1,0 +1,13 @@
+{
+	"files.associations": {
+		"time.h": "c",
+		"unistd.h": "c",
+		"mlx42_int.h": "c",
+		"stdio.h": "c",
+		"lodepng.h": "c",
+		"mlx42.h": "c",
+		"stdlib.h": "c",
+		"memory.h": "c",
+		"so_long.h": "c"
+	}
+}
