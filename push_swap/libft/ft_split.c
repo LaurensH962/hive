@@ -98,10 +98,10 @@ static char	**ft_helpsplit(char const *s, char c, char **ar, size_t count)
 char	**ft_split(char const *s, char c)
 {
 	char	**ar;
-	size_t	i;
+	//size_t	i;
 	size_t	count;
 
-	i = 0;
+	//i = 0;
 	if (!s)
 		return (NULL);
 	count = count_words(s, c);

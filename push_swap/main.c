@@ -259,65 +259,69 @@ void	partition_b(t_stack *stack_a, t_stack *stack_b, int pivot)
 
 void	quick_sort(t_stack *stack_a, t_stack *stack_b, char what_stack)
 {
-	int	pivot;
+    int	pivot;
 
-	if (stack_b->size <= 3 && what_stack == 'b' && !is_descending(stack_b,
-			stack_b->size))
-	{
-		sort_three_des(stack_b, stack_b->size);
-		return ;
-	}
-	if (stack_b->size <= 3 && what_stack == 'a' && !is_descending(stack_b,
-			stack_b->size))
-	{
-		sort_three_des(stack_b, stack_b->size);
-	}
-	if (stack_a->size <= 3 && what_stack == 'b' && !is_ascending(stack_a,
-			stack_a->size))
-	{
-		sort_three_asc(stack_a, stack_a->size);
-	}
-	if (stack_a->size <= 3 && what_stack == 'a' && !is_ascending(stack_a,
-			stack_a->size))
-	{
-		sort_three_asc(stack_a, stack_a->size);
-		return ;
-	}
-	if (is_ascending(stack_a, stack_a->size) && is_descending(stack_b,
-			stack_b->size))
-	{
-		while (!is_empty(stack_b))
-		{
-			push(stack_a, pop(stack_b));
-			ft_printf("pa\n");
-		}
-		return ;
-	}
-	if (what_stack == 'a' && is_ascending(stack_a, stack_a->size))
-		return ;
-	if (what_stack == 'b' && is_descending(stack_b, stack_b->size))
-		return ;
-	if (what_stack == 'a' && stack_a->size > 3)
-	{
-		pivot = find_pivot(stack_a);
-		// printf("pivot = %d", pivot);
-		partition(stack_a, stack_b, pivot);
-	}
-	if (what_stack == 'b' && stack_b->size > 3)
-	{
-		pivot = find_pivot(stack_b);
-		// printf("pivot = %d", pivot);
-		partition_b(stack_a, stack_b, pivot);
-	}
-	quick_sort(stack_a, stack_b, 'b');
+    if (stack_b->size <= 3 && what_stack == 'b' && !is_descending(stack_b, stack_b->size))
+    {
+        sort_three_des(stack_b, stack_b->size);
+        return;
+    }
+    if (stack_b->size <= 3 && what_stack == 'a' && !is_descending(stack_b, stack_b->size))
+    {
+        sort_three_des(stack_b, stack_b->size);
+    }
+	 if (stack_a->size <= 3 && what_stack == 'a' && !is_ascending(stack_a, stack_a->size))
+    {
+        sort_three_asc(stack_a, stack_a->size);
+        return;
+    }
+    if (stack_a->size <= 3 && what_stack == 'b' && !is_ascending(stack_a, stack_a->size))
+    {
+        sort_three_asc(stack_a, stack_a->size);
+    }
+   
+
+    // If both stacks are sorted, move all elements from stack_b to stack_a
+    if (is_ascending(stack_a, stack_a->size) && is_descending(stack_b, stack_b->size) && stack_a->head > stack_b->head)
+    {
+        while (!is_empty(stack_b))
+        {
+            push(stack_a, pop(stack_b));
+            ft_printf("pa\n");
+        }
+        return;
+    }
+
+    // If the current stack is already sorted, return
+    if (what_stack == 'a' && is_ascending(stack_a, stack_a->size))
+        return;
+    if (what_stack == 'b' && is_descending(stack_b, stack_b->size))
+        return;
+
+    // Partition the current stack based on the pivot
+    if (what_stack == 'a' && stack_a->size > 3)
+    {
+        pivot = find_pivot(stack_a);
+        partition(stack_a, stack_b, pivot);
+    }
+    if (what_stack == 'b' && stack_b->size > 3)
+    {
+        pivot = find_pivot(stack_b);
+        partition_b(stack_a, stack_b, pivot);
+    }
+
+    // Recursively sort the partitions
 	quick_sort(stack_a, stack_b, 'a');
-	while (!is_empty(stack_b))
-	{
-		push(stack_a, pop(stack_b));
-		ft_printf("pa\n");
-	}
-}
+    quick_sort(stack_a, stack_b, 'b');
 
+
+    // Move all elements from stack_b to stack_a after sorting
+    while (!is_empty(stack_b))
+    {
+        push(stack_a, pop(stack_b));
+        ft_printf("pa\n");
+    }
+}
 void	print_stack(t_stack *stack)
 {
 	int i, count;

@@ -1,22 +1,26 @@
-NAME 	:= push_swap
-CFLAGS  := -Wall -Wextra -Werror
-LIBFT	:= libft
+NAME := push_swap
+CFLAGS := -Wall -Wextra -Werror
+LIBFT := libft
 
-HEADERS	:= -I$(LIBFT) -I.
-LIBS	:= $(LIBFT)/libft.a
-SRCS	:= $(shell find -iname "*.c")
-OBJS	:= ${SRCS:.c=.o}
+HEADERS := -I$(LIBFT) -I.
+LIBS := $(LIBFT)/libft.a
+#for linux:
+#SRCS	:= $(shell find -iname "*.c")
 
-all: libft $(NAME)
+#for macos:
+SRCS := $(shell find . -iname "*.c" -not -path "./push_swap_visualizer/*")
+OBJS := ${SRCS:.c=.o}
 
-libft:
+all: $(NAME)
+
+$(LIBFT)/libft.a:
 	@make -C $(LIBFT)
+
+$(NAME): $(OBJS) $(LIBFT)/libft.a
+	@$(CC) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME)
 
 %.o: %.c
 	@$(CC) $(CFLAGS) -o $@ -c $< $(HEADERS)
-
-$(NAME): $(OBJS)
-	@$(CC) $(OBJS) $(LIBS) $(HEADERS) -o $(NAME)
 
 clean:
 	@rm -rf $(OBJS)
@@ -24,6 +28,6 @@ clean:
 fclean: clean
 	@rm -rf $(NAME)
 
-re: clean all
+re: fclean all
 
-.PHONY: all, clean, fclean, re, libft
+.PHONY: all clean fclean re
