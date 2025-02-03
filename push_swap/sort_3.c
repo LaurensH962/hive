@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/16 11:04:17 by lhaas             #+#    #+#             */
-/*   Updated: 2025/01/23 17:06:30 by lhaas            ###   ########.fr       */
+/*   Updated: 2025/02/03 16:42:25 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,8 @@ int	is_ascending(t_stack *stack_a, int size)
     int next_index;
 
     i = 0;
+    if (is_empty(stack_a))
+		return (-1);
     while (i < size - 1)
     {
         current_index = (stack_a->head + i) % stack_a->capacity;
@@ -37,6 +39,8 @@ int	is_descending(t_stack *stack_b, int size)
     int next_index;
 
     i = 0;
+    if (is_empty(stack_b))
+		return (-1);
     while (i < size - 1)
     {
         current_index = (stack_b->head + i) % stack_b->capacity;

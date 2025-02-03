@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 10:37:41 by lhaas             #+#    #+#             */
-/*   Updated: 2025/01/23 16:48:29 by lhaas            ###   ########.fr       */
+/*   Updated: 2025/02/03 17:42:03 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ int	main(int argc, char *argv[])
 	free(arr);
 	return (0);
 }
- */
+*/
 
 void	init_stack(t_stack *stack, int capacity)
 {
@@ -172,18 +172,17 @@ int	find_pivot(t_stack *stack)
 
 	if (stack->size < 3)
 	{
-		// printf("Warning: Stack size is less than 3. Using the first element as the pivot.\n");
 		return (stack->arr[stack->head]);
 	}
 	first = stack->arr[stack->head];
 	middle = stack->arr[(stack->head + stack->size / 2) % stack->capacity];
 	last = stack->arr[(stack->head + stack->size - 1) % stack->capacity];
-	if ((first > middle) != (first > last))
-		return (first);
-	else if ((middle > first) != (middle > last))
-		return (middle);
-	else
-		return (last);
+	if ((first > middle && first < last) || (first < middle && first > last))
+        return first;
+    else if ((middle > first && middle < last) || (middle < first && middle > last))
+        return middle;
+    else
+        return last;
 }
 
 void	partition(t_stack *stack_a, t_stack *stack_b, int pivot)
@@ -197,8 +196,9 @@ void	partition(t_stack *stack_a, t_stack *stack_b, int pivot)
 	{
 		if (is_ascending(stack_a, stack_a->size))
 			return;
-		if (stack_a->arr[stack_a->head] < pivot)
+		if (stack_a->arr[stack_a->head] <= pivot)
 		{
+			//ft_printf("a head = %d\n", stack_a->arr[stack_a->head]);
 			push(stack_b, pop(stack_a));
 			ft_printf("pb\n");
 		}
@@ -207,6 +207,7 @@ void	partition(t_stack *stack_a, t_stack *stack_b, int pivot)
 					swap(stack_b); */
 		else
 		{
+			//ft_printf("a head = %d\n", stack_a->arr[stack_a->head]);
 			rotate(stack_a);
 			ft_printf("ra\n");
 			rotations++;
@@ -229,21 +230,24 @@ void	partition_b(t_stack *stack_a, t_stack *stack_b, int pivot)
 	rotations = 0;
 	for (int i = 0; i < original_size; i++)
 	{
-		if (stack_b->arr[stack_b->head] < stack_b->arr[(stack_b->head + 1)
+		 /* if (stack_b->arr[stack_b->head] < stack_b->arr[(stack_b->head + 1)
 			% stack_b->capacity])
 		{
+			ft_printf("b head = %d\n", stack_b->arr[stack_b->head]);
 			swap(stack_b);
 			ft_printf("sb\n");
-		}
+		} */
 		if (is_descending(stack_b, stack_b->size))
 			return;
-		if (stack_b->arr[stack_b->head] > pivot)
+		if (stack_b->arr[stack_b->head] >= pivot)
 		{
+			//ft_printf("b head = %d\n", stack_b->arr[stack_b->head]);
 			push(stack_a, pop(stack_b));
 			ft_printf("pa\n");
 		}
 		else
 		{
+			//ft_printf("b head = %d\n", stack_b->arr[stack_b->head]);
 			rotate(stack_b);
 			ft_printf("rb\n");
 			rotations++;
@@ -261,7 +265,13 @@ void	quick_sort(t_stack *stack_a, t_stack *stack_b, char what_stack)
 {
     int	pivot;
 
-    if (stack_b->size <= 3 && what_stack == 'b' && !is_descending(stack_b, stack_b->size))
+
+	if (what_stack == 'a' && is_ascending(stack_a, stack_a->size))
+		return;
+    if (what_stack == 'b' && is_descending(stack_b, stack_b->size))
+		return;
+
+	if (stack_b->size <= 3 && what_stack == 'b' && !is_descending(stack_b, stack_b->size))
     {
         sort_three_des(stack_b, stack_b->size);
         return;
@@ -279,10 +289,23 @@ void	quick_sort(t_stack *stack_a, t_stack *stack_b, char what_stack)
     {
         sort_three_asc(stack_a, stack_a->size);
     }
-   
+    // Partition the current stack based on the pivot
+    if (what_stack == 'a' && stack_a->size > 3)
+    {
+        pivot = find_pivot(stack_a);
+		ft_printf ("pivot a = %d\n", pivot);
+        partition(stack_a, stack_b, pivot);
+    }
+    if (what_stack == 'b' && stack_b->size > 3)
+    {
+        pivot = find_pivot(stack_b);
+		ft_printf ("pivot b = %d\n", pivot);
+        partition_b(stack_a, stack_b, pivot);
+    }
+
 
     // If both stacks are sorted, move all elements from stack_b to stack_a
-    if (is_ascending(stack_a, stack_a->size) && is_descending(stack_b, stack_b->size) && stack_a->head > stack_b->head)
+    if (is_ascending(stack_a, stack_a->size) && is_descending(stack_b, stack_b->size) && stack_a->arr[stack_a->head] > stack_b->arr[stack_b->head])
     {
         while (!is_empty(stack_b))
         {
@@ -291,28 +314,8 @@ void	quick_sort(t_stack *stack_a, t_stack *stack_b, char what_stack)
         }
         return;
     }
-
-    // If the current stack is already sorted, return
-    if (what_stack == 'a' && is_ascending(stack_a, stack_a->size))
-        return;
-    if (what_stack == 'b' && is_descending(stack_b, stack_b->size))
-        return;
-
-    // Partition the current stack based on the pivot
-    if (what_stack == 'a' && stack_a->size > 3)
-    {
-        pivot = find_pivot(stack_a);
-        partition(stack_a, stack_b, pivot);
-    }
-    if (what_stack == 'b' && stack_b->size > 3)
-    {
-        pivot = find_pivot(stack_b);
-        partition_b(stack_a, stack_b, pivot);
-    }
-
-    // Recursively sort the partitions
-	quick_sort(stack_a, stack_b, 'a');
-    quick_sort(stack_a, stack_b, 'b');
+	quick_sort(stack_a, stack_b, 'b');
+    quick_sort(stack_a, stack_b, 'a');
 
 
     // Move all elements from stack_b to stack_a after sorting
