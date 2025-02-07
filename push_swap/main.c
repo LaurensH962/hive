@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/15 10:37:41 by lhaas             #+#    #+#             */
-/*   Updated: 2025/02/03 17:42:03 by lhaas            ###   ########.fr       */
+/*   Updated: 2025/02/07 15:43:48 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,293 +72,355 @@ int	main(int argc, char *argv[])
 }
 */
 
-void	init_stack(t_stack *stack, int capacity)
-{
-	stack->arr = (int *)malloc(sizeof(int) * capacity);
-	stack->size = 0;
-	stack->capacity = capacity;
-	stack->head = 0;
-	stack->tail = 0;
-}
-
-int	is_full(t_stack *stack)
-{
-	return (stack->size == stack->capacity);
-}
-
-int	is_empty(t_stack *stack)
-{
-	return (stack->size == 0);
-}
-
-void	push(t_stack *stack, int value)
-{
-	if (is_full(stack))
-	{
-		// printf("Error: Stack is full. Cannot push %d.\n", value);
-		return ;
-	}
-	stack->head = (stack->head + stack->capacity - 1) % stack->capacity;
-	stack->arr[stack->head] = value;
-	stack->size++;
-	// printf("pp\n");
-}
-
-void	first_push(t_stack *stack, int value)
-{
-	if (is_full(stack))
-	{
-		return ;
-	}
-	stack->arr[stack->tail] = value;
-	stack->tail = (stack->tail + 1) % stack->capacity;
-	stack->size++;
-}
-
-int	pop(t_stack *stack)
-{
-	int	value;
-
-	if (is_empty(stack))
-		return (-1);
-	value = stack->arr[stack->head];
-	stack->head = (stack->head + 1) % stack->capacity;
-	stack->size--;
-	return (value);
-}
-
-void	swap(t_stack *stack)
-{
-	int	temp;
-
-	if (stack->size < 2)
-		return ;
-	temp = stack->arr[stack->head];
-	stack->arr[stack->head] = stack->arr[(stack->head + 1) % stack->capacity];
-	stack->arr[(stack->head + 1) % stack->capacity] = temp;
-	// printf("sw\n");
-}
-
-void	rotate(t_stack *stack)
-{
-	int	temp;
-
-	if (stack->size < 2)
-		return ;
-	temp = stack->arr[stack->head];
-	stack->head = (stack->head + 1) % stack->capacity;
-	stack->arr[stack->tail] = temp;
-	stack->tail = (stack->tail + 1) % stack->capacity;
-	// printf("rr\n");
-}
-
-void	reverse_rotate(t_stack *stack)
-{
-	int	temp;
-
-	if (stack->size < 2)
-		return ;
-	temp = stack->arr[(stack->tail + stack->capacity - 1) % stack->capacity];
-	stack->tail = (stack->tail + stack->capacity - 1) % stack->capacity;
-	stack->head = (stack->head + stack->capacity - 1) % stack->capacity;
-	stack->arr[stack->head] = temp;
-}
-
 int	find_pivot(t_stack *stack)
 {
-	int	first;
-	int	middle;
-	int	last;
+	int	min;
+	int	max;
+	int	i;
+	int	count;
+	int	current;
 
-	if (stack->size < 3)
+	min = stack->arr[stack->head].rank;
+	max = stack->arr[stack->head].rank;
+	i = stack->head;
+	count = 0;
+	while (count < stack->size)
 	{
-		return (stack->arr[stack->head]);
+		current = stack->arr[i].rank;
+		if (current < min)
+			min = current;
+		if (current > max)
+			max = current;
+		i = (i + 1) % stack->capacity;
+		count++;
 	}
-	first = stack->arr[stack->head];
-	middle = stack->arr[(stack->head + stack->size / 2) % stack->capacity];
-	last = stack->arr[(stack->head + stack->size - 1) % stack->capacity];
-	if ((first > middle && first < last) || (first < middle && first > last))
-        return first;
-    else if ((middle > first && middle < last) || (middle < first && middle > last))
-        return middle;
-    else
-        return last;
+	return ((min + max) / 2);
+}
+
+int	find_next_index_a(t_stack *stack, int pivot)
+{
+	int	i;
+	int	size;
+	int	idx;
+
+	size = stack->size;
+	i = 0;
+	while (i < size)
+	{
+		idx = (stack->head + i) % stack->capacity;
+		if (stack->arr[idx].rank < pivot)
+			return (i);
+		i++;
+	}
+	return (-1);
+}
+
+int	has_smaller_than_pivot(t_stack *stack, int pivot)
+{
+	int	i;
+	int	count;
+
+	i = stack->head;
+	count = 0;
+	while (count < stack->size)
+	{
+		if (stack->arr[i].rank < pivot)
+			return (1);
+		i = (i + 1) % stack->capacity;
+		count++;
+	}
+	return (0);
 }
 
 void	partition(t_stack *stack_a, t_stack *stack_b, int pivot)
 {
 	int	original_size;
-	int	rotations;
+	int	moves;
+	int	next_index;
+	int	i;
 
 	original_size = stack_a->size;
-	rotations = 0;
-	for (int i = 0; i < original_size; i++)
+	moves = 0;
+	i = 0;
+	while (i < original_size)
 	{
-		if (is_ascending(stack_a, stack_a->size))
-			return;
-		if (stack_a->arr[stack_a->head] <= pivot)
+		if (is_strictly_sequential_asc(stack_a, stack_a->size))
+			return ;
+		if (has_smaller_than_pivot(stack_a, pivot))
 		{
-			//ft_printf("a head = %d\n", stack_a->arr[stack_a->head]);
-			push(stack_b, pop(stack_a));
-			ft_printf("pb\n");
+			if (stack_b->size > 3
+				&& stack_b->arr[stack_b->head].rank < stack_b->arr[(stack_b->head
+						+ 1) % stack_b->capacity].rank
+				&& stack_b->arr[stack_b->head].rank <= pivot
+				&& stack_a->arr[stack_a->head].rank > stack_a->arr[(stack_a->head
+						+ 1) % stack_a->capacity].rank
+				&& stack_a->arr[stack_a->head].rank <= pivot)
+			{
+				swap(stack_b);
+				swap(stack_a);
+				ft_printf("ss\n");
+			}
+			else if (stack_a->size > 3
+				&& stack_a->arr[stack_a->head].rank > stack_a->arr[(stack_a->head
+						+ 1) % stack_a->capacity].rank
+				&& stack_a->arr[stack_a->head].rank <= pivot)
+			{
+				swap(stack_a);
+				ft_printf("sa\n");
+			}
+			if (stack_a->arr[stack_a->head].rank <= pivot)
+			{
+				push(stack_b, pop(stack_a));
+				moves++;
+				ft_printf("pb\n");
+			}
+			else
+			{
+				next_index = find_next_index_a(stack_a, pivot);
+				if (next_index != -1)
+				{
+					if (next_index <= stack_a->size / 2)
+					{
+						rotate(stack_a);
+						ft_printf("ra\n");
+					}
+					else
+					{
+						reverse_rotate(stack_a);
+						ft_printf("rra\n");
+					}
+					moves++;
+				}
+			}
 		}
-		/* 		if (stack_b->arr[stack_b->head] < stack_b->arr[(stack_b->head
-						+ 1) % stack_b->capacity])
-					swap(stack_b); */
-		else
-		{
-			//ft_printf("a head = %d\n", stack_a->arr[stack_a->head]);
-			rotate(stack_a);
-			ft_printf("ra\n");
-			rotations++;
-		}
-		if (rotations == original_size)
+		if (moves == original_size)
 			break ;
+		i++;
 	}
-	/* printf("\nPartition A complete. \nStack A: ");
-	print_stack(stack_a);
-	printf("Stack B: ");
-	print_stack(stack_b); */
+}
+
+int	find_next_index_b(t_stack *stack, int pivot)
+{
+	int	i;
+	int	size;
+	int	idx;
+
+	i = 0;
+	size = stack->size;
+	while (i < size)
+	{
+		idx = (stack->head + i) % stack->capacity;
+		if (stack->arr[idx].rank >= pivot)
+			return (i);
+		i++;
+	}
+	return (-1);
+}
+
+int	has_bigger_than_pivot(t_stack *stack, int pivot)
+{
+	int	i;
+	int	count;
+
+	i = stack->head;
+	count = 0;
+	while (count < stack->size)
+	{
+		if (stack->arr[i].rank > pivot)
+			return (1);
+		i = (i + 1) % stack->capacity;
+		count++;
+	}
+	return (0);
 }
 
 void	partition_b(t_stack *stack_a, t_stack *stack_b, int pivot)
 {
 	int	original_size;
-	int	rotations;
+	int	moves;
+	int	rotated;
+	int	next_index;
+	int	i;
 
 	original_size = stack_b->size;
-	rotations = 0;
-	for (int i = 0; i < original_size; i++)
+	moves = 0;
+	rotated = 0;
+	i = 0;
+	while (i < original_size)
 	{
-		 /* if (stack_b->arr[stack_b->head] < stack_b->arr[(stack_b->head + 1)
-			% stack_b->capacity])
+		if (is_strictly_sequential_desc(stack_b, stack_b->size))
+			return ;
+		if (has_bigger_than_pivot(stack_b, pivot))
 		{
-			ft_printf("b head = %d\n", stack_b->arr[stack_b->head]);
-			swap(stack_b);
-			ft_printf("sb\n");
-		} */
-		if (is_descending(stack_b, stack_b->size))
-			return;
-		if (stack_b->arr[stack_b->head] >= pivot)
-		{
-			//ft_printf("b head = %d\n", stack_b->arr[stack_b->head]);
-			push(stack_a, pop(stack_b));
-			ft_printf("pa\n");
+			if (stack_b->size > 3
+				&& stack_b->arr[stack_b->head].rank < stack_b->arr[(stack_b->head
+						+ 1) % stack_b->capacity].rank
+				&& stack_b->arr[stack_b->head].rank >= pivot
+				&& stack_a->size > 3
+				&& stack_a->arr[stack_a->head].rank > stack_a->arr[(stack_a->head
+						+ 1) % stack_a->capacity].rank
+				&& stack_a->arr[stack_a->head].rank <= pivot)
+			{
+				swap(stack_b);
+				swap(stack_a);
+				ft_printf("ss\n");
+			}
+			else if (stack_b->size > 3
+				&& stack_b->arr[stack_b->head].rank < stack_b->arr[(stack_b->head
+						+ 1) % stack_b->capacity].rank
+				&& stack_b->arr[stack_b->head].rank >= pivot)
+			{
+				swap(stack_b);
+				ft_printf("sb\n");
+			}
+			if (stack_b->arr[stack_b->head].rank >= pivot)
+			{
+				push(stack_a, pop(stack_b));
+				moves++;
+				ft_printf("pa\n");
+			}
+			else
+			{
+				next_index = find_next_index_b(stack_b, pivot);
+				if (next_index != -1)
+				{
+					if (next_index <= stack_b->size / 2)
+					{
+						rotate(stack_b);
+						ft_printf("rb\n");
+					}
+					else
+					{
+						reverse_rotate(stack_b);
+						ft_printf("rrb\n");
+					}
+					moves++;
+				}
+			}
 		}
-		else
-		{
-			//ft_printf("b head = %d\n", stack_b->arr[stack_b->head]);
-			rotate(stack_b);
-			ft_printf("rb\n");
-			rotations++;
-		}
-		if (rotations == original_size)
+		if (moves == original_size)
 			break ;
+		i++;
 	}
-	/* printf("\nPartition B complete. \nStack A: ");
-	print_stack(stack_a);
-	printf("Stack B: ");
-	print_stack(stack_b); */
 }
 
-void	quick_sort(t_stack *stack_a, t_stack *stack_b, char what_stack)
+int	qs_basecase(t_stack *stack_a, t_stack *stack_b, char what_stack)
 {
-    int	pivot;
-
-
-	if (what_stack == 'a' && is_ascending(stack_a, stack_a->size))
-		return;
-    if (what_stack == 'b' && is_descending(stack_b, stack_b->size))
-		return;
-
-	if (stack_b->size <= 3 && what_stack == 'b' && !is_descending(stack_b, stack_b->size))
-    {
-        sort_three_des(stack_b, stack_b->size);
-        return;
-    }
-    if (stack_b->size <= 3 && what_stack == 'a' && !is_descending(stack_b, stack_b->size))
-    {
-        sort_three_des(stack_b, stack_b->size);
-    }
-	 if (stack_a->size <= 3 && what_stack == 'a' && !is_ascending(stack_a, stack_a->size))
-    {
-        sort_three_asc(stack_a, stack_a->size);
-        return;
-    }
-    if (stack_a->size <= 3 && what_stack == 'b' && !is_ascending(stack_a, stack_a->size))
-    {
-        sort_three_asc(stack_a, stack_a->size);
-    }
-    // Partition the current stack based on the pivot
-    if (what_stack == 'a' && stack_a->size > 3)
-    {
-        pivot = find_pivot(stack_a);
-		ft_printf ("pivot a = %d\n", pivot);
-        partition(stack_a, stack_b, pivot);
-    }
-    if (what_stack == 'b' && stack_b->size > 3)
-    {
-        pivot = find_pivot(stack_b);
-		ft_printf ("pivot b = %d\n", pivot);
-        partition_b(stack_a, stack_b, pivot);
-    }
-
-
-    // If both stacks are sorted, move all elements from stack_b to stack_a
-    if (is_ascending(stack_a, stack_a->size) && is_descending(stack_b, stack_b->size) && stack_a->arr[stack_a->head] > stack_b->arr[stack_b->head])
-    {
-        while (!is_empty(stack_b))
-        {
-            push(stack_a, pop(stack_b));
-            ft_printf("pa\n");
-        }
-        return;
-    }
-	quick_sort(stack_a, stack_b, 'b');
-    quick_sort(stack_a, stack_b, 'a');
-
-
-    // Move all elements from stack_b to stack_a after sorting
-    while (!is_empty(stack_b))
-    {
-        push(stack_a, pop(stack_b));
-        ft_printf("pa\n");
-    }
-}
-void	print_stack(t_stack *stack)
-{
-	int i, count;
-	i = stack->head;
-	count = 0;
-	// printf("Stack contents: ");
-	while (count < stack->size)
+	if ((what_stack == 'a' && stack_a->size <= 1) || (what_stack == 'b'
+			&& stack_b->size <= 1))
+		return (-1);
+	if (what_stack == 'a' && is_strictly_sequential_asc(stack_a, stack_a->size))
+		return (-1);
+	if (what_stack == 'b' && is_strictly_sequential_desc(stack_b,
+			stack_b->size))
+		return (-1);
+	if (stack_b->size <= 3 && what_stack == 'b' && !is_descending(stack_b,
+			stack_b->size))
 	{
-		printf("%d ", stack->arr[i]);
-		i = (i + 1) % stack->capacity;
-		count++;
+		sort_three_des(stack_b, stack_b->size);
+		return (-1);
 	}
-	printf("\n");
+	if (stack_a->size <= 3 && what_stack == 'a' && !is_ascending(stack_a,
+			stack_a->size))
+	{
+		sort_three_asc(stack_a, stack_a->size);
+		return (-1);
+	}
+	return (0);
 }
 
-int	main(int argc, char *argv[])
+void	quick_sort(t_stack *stack_a, t_stack *stack_b, char what_stack,
+		int pivot)
+{
+	if (qs_basecase(stack_a, stack_b, what_stack) == -1)
+		return ;
+	if (what_stack == 'a' && stack_a->size > 3)
+	{
+		pivot = find_pivot(stack_a);
+		partition(stack_a, stack_b, pivot);
+	}
+	if (what_stack == 'b' && stack_b->size > 3)
+	{
+		pivot = pivot * 0.9;
+		partition_b(stack_a, stack_b, pivot);
+	}
+	quick_sort(stack_a, stack_b, 'a', pivot);
+	quick_sort(stack_a, stack_b, 'b', pivot);
+	while (!is_empty(stack_b))
+	{
+		push(stack_a, pop(stack_b));
+		ft_printf("pa\n");
+	}
+	return ;
+}
+
+void	rank_stack(t_stack *stack)
+{
+	int	*indices;
+	int	i;
+	int	j;
+	int	temp;
+
+	i = 0;
+	j = 0;
+	indices = malloc(stack->size * sizeof(int));
+	if (!indices)
+		return ;
+	while (i < stack->size)
+	{
+		indices[i] = i;
+		i++;
+	}
+	i = 0;
+	while (i < stack->size - 1)
+	{
+		j = 0;
+		while (j < stack->size - i - 1)
+		{
+			if (stack->arr[indices[j]].value > stack->arr[indices[j + 1]].value)
+			{
+				temp = indices[j];
+				indices[j] = indices[j + 1];
+				indices[j + 1] = temp;
+			}
+			j++;
+		}
+		i++;
+	}
+	i = 0;
+	while (i < stack->size)
+	{
+		stack->arr[indices[i]].rank = i + 1;
+		i++;
+	}
+	free(indices);
+}
+
+void	fill_stack(t_stack *stack_a, char *argv[], int argc)
 {
 	int	i;
 	int	num;
 
-	t_stack stack_a, stack_b;
-	init_stack(&stack_a, argc - 1);
-	init_stack(&stack_b, argc - 1);
-	for (i = 1; i < argc; i++)
+	i = 1;
+	while (i < argc)
 	{
 		num = ft_atoi(argv[i]);
-		first_push(&stack_a, num);
+		first_push(stack_a, num);
+		i++;
 	}
-	printf("Initial Stack A: ");
-	print_stack(&stack_a);
-	quick_sort(&stack_a, &stack_b, 'a');
-	printf("\nSorted Stack A: ");
-	print_stack(&stack_a);
-	printf("Sorted Stack B: ");
-	print_stack(&stack_b);
+	rank_stack(stack_a);
+}
+
+int	main(int argc, char *argv[])
+{
+	t_stack	stack_a;
+	t_stack	stack_b;
+
+	init_stack(&stack_a, argc - 1);
+	init_stack(&stack_b, argc - 1);
+	fill_stack(&stack_a, argv, argc);
+	quick_sort(&stack_a, &stack_b, 'a', 0);
+	free(stack_a.arr);
+	free(stack_b.arr);
 	return (0);
 }
