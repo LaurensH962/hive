@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/31 10:49:48 by lhaas             #+#    #+#             */
-/*   Updated: 2025/01/09 17:02:20 by lhaas            ###   ########.fr       */
+/*   Updated: 2025/02/09 13:23:12 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ size_t				gnl_ft_strlen(const char *s);
 
 // OG LIBFT
 
-int					ft_atoi(const char *nptr);
+long long			ft_atoi(const char *nptr);
 void				ft_bzero(void *s, size_t n);
 void				*ft_calloc(size_t nmemb, size_t size);
 int					ft_isalnum(int c);

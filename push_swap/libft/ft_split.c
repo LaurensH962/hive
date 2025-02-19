@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/01 09:41:17 by lhaas             #+#    #+#             */
-/*   Updated: 2024/11/11 16:08:56 by lhaas            ###   ########.fr       */
+/*   Updated: 2025/02/09 12:32:41 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,10 +98,8 @@ static char	**ft_helpsplit(char const *s, char c, char **ar, size_t count)
 char	**ft_split(char const *s, char c)
 {
 	char	**ar;
-	//size_t	i;
 	size_t	count;
 
-	//i = 0;
 	if (!s)
 		return (NULL);
 	count = count_words(s, c);
