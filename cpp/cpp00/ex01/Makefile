@@ -1,15 +1,15 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror
 
-TARGET = myPhonebook
+NAME = myPhonebook
 
 SRCS = phonebook.cpp main.cpp utils.cpp
 OBJS = $(SRCS:.cpp=.o)
 
-all: $(TARGET)
+all: $(NAME)
 
-$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET)
+$(NAME): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -18,7 +18,7 @@ clean:
 	rm -f $(OBJS)
 
 fclean: clean
-	rm -f $(TARGET)
+	rm -f $(NAME)
 
 re: fclean all
 

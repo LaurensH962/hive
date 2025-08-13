@@ -1,7 +1,7 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror
 
-NAME = BankingGangsters
+NAME = BraiiiiiiinnnzzzZ
 
 SRCS = tests.cpp Account.cpp
 OBJS = $(SRCS:.cpp=.o)
