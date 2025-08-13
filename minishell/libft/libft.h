@@ -6,7 +6,7 @@
 /*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/31 10:49:48 by lhaas             #+#    #+#             */
-/*   Updated: 2025/03/19 15:06:16 by lhaas            ###   ########.fr       */
+/*   Updated: 2025/04/01 16:59:32 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <stdint.h>
 # include <stdlib.h>
 # include <unistd.h>
+# include <stdio.h>
 
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 1024
@@ -93,6 +94,7 @@ int					ft_tolower(int c);
 int					ft_toupper(int c);
 void				*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 char				*ft_strtok(char *s, const char *delim);
+char				*ft_strtok_r(char *s, const char *delim, char **save_ptr);
 int					ft_isspace(char c);
 char				*ft_strndup(const char *s, size_t len);
 int					ft_strcmp(const char *s1, const char *s2);

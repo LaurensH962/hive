@@ -1,23 +1,35 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   error.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/19 16:16:52 by lhaas             #+#    #+#             */
+/*   Updated: 2025/05/19 16:17:01 by lhaas            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-void	report_error(const char *filename, const char *err_msg)
+void	report_error(char *filename, char *err_msg)
 {
-	char	buffer[512];
-	int		len;
-	char	*program;
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
+	if (filename)
+		ft_putstr_fd(filename, STDERR_FILENO);
+	ft_putstr_fd(err_msg, STDERR_FILENO);
+}
 
-	if (filename == NULL || err_msg == NULL)
-		return;
-	program = "minishell:";
-	len = 0;
-	while (*program)
-		buffer[len++] = *program++;
-	buffer[len++] = ' ';
-	while (*err_msg)
-		buffer[len++] = *err_msg++;
-	buffer[len++] = ' ';
-	while (*filename)
-		buffer[len++] = *filename++;
-	buffer[len++] = '\n';
-	write(2, buffer, len);	
+void	cd_report_error(char *cmd, char *filename, char *err_msg)
+{
+	ft_putstr_fd("minishell: ", STDERR_FILENO);
+	ft_putstr_fd(cmd, STDERR_FILENO);
+	ft_putstr_fd(filename, STDERR_FILENO);
+	ft_putstr_fd(err_msg, STDERR_FILENO);
+}
+
+int	set_status_last_command_return(t_shell *shell, int i)
+{
+	shell->status_last_command = 1;
+	return (i);
 }

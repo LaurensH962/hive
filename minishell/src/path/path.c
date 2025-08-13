@@ -1,16 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   path.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/19 16:21:26 by lhaas             #+#    #+#             */
+/*   Updated: 2025/05/19 16:21:27 by lhaas            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
-
-void	free_split(char **split)
-{
-	int	i;
-
-	i = 0;
-	if (!split)
-		return ;
-	while (split[i] != NULL)
-		free(split[i++]);
-	free(split);
-}
 
 static char	*join_path(const char *dir, const char *cmd)
 {
@@ -57,13 +57,14 @@ static char	*find_command_path(char *cmd, char **paths, int *fail_flag)
 	char	*full_path;
 
 	i = 0;
-	while (paths[i])
+	while (paths && paths[i])
 	{
 		full_path = join_path(paths[i], cmd);
 		if (!full_path)
 		{
-			perror("minishell: Memory allocation failed2");
-			*fail_flag = 1;
+			perror("minishell: malloc");
+			if (*fail_flag)
+				*fail_flag = 1;
 			return (NULL);
 		}
 		if (access(full_path, F_OK) != -1)
@@ -86,8 +87,9 @@ char	*get_command_path(char *cmd, char **envp, int *fail_flag)
 	paths = ft_split(path_env, ':');
 	if (!paths)
 	{
-		perror("minishell: Memory allocation failed1");
-		*fail_flag = 1;
+		perror("minishell: malloc");
+		if (fail_flag)
+			*fail_flag = 1;
 		return (NULL);
 	}
 	full_path = find_command_path(cmd, paths, fail_flag);
@@ -98,22 +100,4 @@ char	*get_command_path(char *cmd, char **envp, int *fail_flag)
 	}
 	free_split(paths);
 	return (full_path);
-}
-
-void	set_command_path(t_ast *node, t_shell *shell)
-{
-	int		fail_flag;
-
-	if (node == NULL)
-		return ;
-	if (!node->cmd && node->type != NODE_PIPE)
-		return ;
-	set_command_path(node->right, shell);
-	set_command_path(node->left, shell);
-	if (node->type == NODE_COMMAND)
-	{
-		node->cmd_path = get_command_path(node->cmd, shell->env, &fail_flag);
-		if (fail_flag == 1)
-			cleanup_shell(shell);
-	}
 }

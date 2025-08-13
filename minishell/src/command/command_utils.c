@@ -1,120 +1,79 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   command_utils.c                                    :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/19 16:16:29 by lhaas             #+#    #+#             */
+/*   Updated: 2025/05/19 16:16:30 by lhaas            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-void	handle_heredoc(int *heredoc_pipe, t_ast *node, t_shell *shell)
+int	initialize_pid_array(t_shell *shell)
 {
-	if (pipe(heredoc_pipe) == -1)
-	{
-		perror("minishell: pipe");
-		cleanup_shell(shell);
-		exit(1);
-	}
-	write(heredoc_pipe[1], node->redirections->file, strlen(node->redirections->file));
-    close(heredoc_pipe[1]);
-	dup2(heredoc_pipe[0], STDIN_FILENO);
-    close(heredoc_pipe[0]);
-}
-
-void	handle_inputfile(int *fd_read, t_ast *node, t_shell *shell)
-{
-	check_file_access_read(node->redirections->file, shell);
-	*fd_read = open(node->redirections->file, O_RDONLY);
-	if (*fd_read == -1)
-	{
-		perror("minishell: open");
-		cleanup_shell(shell);
-		close(*fd_read);
-		exit(1);
-	}
-	dup2(*fd_read, STDIN_FILENO);
-	close(*fd_read);
-}
-
-void	handle_outputfile(int *fd_write, t_ast *node, t_shell *shell)
-{
-	check_file_access_write(node->redirections->file, shell);
-	if (node->redirections->type == NODE_APPEND)
-		*fd_write = open(node->redirections->file, O_WRONLY | O_CREAT | O_APPEND, 0644);
-	else
-		*fd_write = open(node->redirections->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (*fd_write == -1)
-	{
-		perror("minishell: open output file failed");
-		cleanup_shell(shell);
-		close(*fd_write);
-		exit(1);
-	}
-	dup2(*fd_write, STDOUT_FILENO);
-	close(*fd_write);
-}
-
-char **copy_environ(char **env)
-{
-	int count;
-	char **env_copy;
-	int i ;
-
-	count = 0;
-	while(env[count] != NULL)
-		count++;
-	if (count == 0)
-		return (NULL);
-	env_copy = malloc(sizeof(char *) * (count + 1));
-	if (env_copy == NULL)
+	shell->pid = ft_calloc(1, sizeof(pid_t) * (shell->pipe_count + 1));
+	if (!shell->pid)
 	{
 		perror("minishell: malloc");
-		return (NULL);
+		shell->status_last_command = 1;
+		return (1);
 	}
+	shell->pid_index = 0;
+	return (0);
+}
+
+static int	malloc_pipe_fail(t_shell *shell, int i)
+{
+	perror("minishell: malloc");
+	while (--i >= 0)
+		free(shell->pipes[i]);
+	free(shell->pipes);
+	shell->pipes = NULL;
+	shell->status_last_command = 1;
+	return (1);
+}
+
+int	initialize_pipes(t_shell *shell)
+{
+	int	i;
+
 	i = 0;
-	while(i < count)
+	if (shell->pipe_count > 0)
 	{
-		env_copy[i] = ft_strdup(env[i]);
-		if (!env_copy[i])
+		shell->pipes = malloc(sizeof(int *) * shell->pipe_count);
+		if (!shell->pipes)
 		{
-			free_array(env_copy, i);
 			perror("minishell: malloc");
-			return (NULL);
+			shell->status_last_command = 1;
+			return (1);
 		}
-		i++;
+		shell->pipe_index = 0;
+		shell->index = 0;
+		while (i < shell->pipe_count)
+		{
+			shell->pipes[i] = malloc(sizeof(int) * 2);
+			if (!shell->pipes[i])
+				return (malloc_pipe_fail(shell, i));
+			i++;
+		}
 	}
-	env_copy[i] = NULL;
-	return (env_copy);
+	return (0);
 }
 
-/*void	execute_builtin(t_ast *node, t_shell *shell)
+void	redirections(int in_fd, int out_fd)
 {
-	char *number = "3";
-	if (ft_strcmp(node->cmd ,"echo") == 0)
-		exit(ft_echo(node->args, node->args[1]));
-	else if (ft_strcmp(node->cmd , "cd") == 0)
-		exit(ft_cd(node->args[1]));
-	else if (ft_strcmp(node->cmd ,"exit") == 0)
-		ft_exit(node->cmd);
-	else if (ft_strcmp(node->cmd  ,"pwd") == 0)
-		exit(ft_pwd());
-	else if (ft_strcmp(node->cmd , "export") == 0)
-		exit(ft_export(&shell->env, node->args, &number));
-	else if (ft_strcmp(node->cmd , "unset") == 0)
-		exit(ft_unset(&shell->env, node->args));
-	else if (ft_strcmp(node->cmd ,"env") == 0)
-		exit(ft_env(shell->env));
+	if (in_fd != STDIN_FILENO)
+		dup2(in_fd, STDIN_FILENO);
+	if (out_fd != STDOUT_FILENO)
+		dup2(out_fd, STDOUT_FILENO);
 }
 
-int	check_if_builtin(t_ast *node)
+void	close_pipes_cleanup(t_shell *shell)
 {
-	if (ft_strcmp(node->cmd ,"echo") == 0)
-		return (1);
-	else if (ft_strcmp(node->cmd , "cd") == 0)
-		return (1);
-	else if (ft_strcmp(node->cmd ,"exit") == 0)
-		return (1);
-	else if (ft_strcmp(node->cmd  ,"pwd") == 0)
-		return (1);
-	else if (ft_strcmp(node->cmd , "export") == 0)
-		return (1);
-	else if (ft_strcmp(node->cmd , "unset") == 0)
-		return (1);
-	else if (ft_strcmp(node->cmd ,"env") == 0)
-		return (1);
-	else
-		return (0);
-}*/
+	close_pipes(shell);
+	cleanup_all(shell);
+	exit(1);
+}

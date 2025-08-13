@@ -1,106 +1,141 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   command.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/19 16:16:33 by lhaas             #+#    #+#             */
+/*   Updated: 2025/05/20 14:04:13 by lhaas            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "minishell.h"
 
-void	execute_ast(t_shell *shell, t_ast *node, int in_fd, int out_fd)
+int	check_redirections(t_shell *shell, t_redirect *redir)
 {
-    int pipe_fd[2];
+	int	fd;
+	int	flags;
 
-    if (node->type == NODE_PIPE)
-    {
-        if (pipe(pipe_fd) == -1)
-        {
-            cleanup_shell(shell);
-            perror("minishell: pipe");
-            exit(1);
-        }
-        execute_ast(shell, node->left, in_fd, pipe_fd[1]);
-        close(pipe_fd[1]);
-        execute_ast(shell, node->right, pipe_fd[0], out_fd);
-        close(pipe_fd[0]);
-    }
-    else if(node->type == NODE_COMMAND)
-        execute_command(shell, node, in_fd, out_fd);
+	if (redir->type == NODE_REDIRECT_IN)
+	{
+		if (check_file_access_read(redir->file, 3, shell))
+			return (set_status_last_command_return(shell, 2));
+	}
+	if (redir->type == NODE_REDIRECT_OUT || redir->type == NODE_APPEND)
+	{
+		if (redir->type == NODE_REDIRECT_OUT)
+			flags = O_CREAT | O_WRONLY | O_TRUNC;
+		else
+			flags = O_CREAT | O_WRONLY | O_APPEND;
+		if (check_file_access_write(redir->file, 3, shell))
+			return (set_status_last_command_return(shell, 2));
+		fd = open(redir->file, flags, 0644);
+		if (fd == -1)
+		{
+			perror("minishell: open");
+			return (1);
+		}
+		close(fd);
+	}
+	return (0);
 }
 
-void    execute_command(t_shell *shell, t_ast *node, int in_fd, int out_fd)
+static int	prescan_redirections(t_ast *node, t_shell *shell)
 {
-    pid_t pid;
-    int status;
+	t_redirect	*redir;
+	int			result;
 
-    pid = fork();
-    if(pid == -1)
-    {
-        cleanup_shell(shell);
-        perror("minishell: pipe");
-        exit(1);
-    }
-    if (pid == 0)
-    {
-        handle_redirections(node, in_fd, out_fd, shell);
-        //if (check_if_builtin(node))
-            //execute_builtin(node, shell);
-        if (node->cmd == NULL)
-		    exit (0);
-        check_command_access(node, shell);
-        execve(node->cmd_path, node->args, shell->env);
-        perror("minishell: execve");
-		cleanup_shell(shell);
-		exit(1);
-    }
-    waitpid(pid, &status, 0);
-    if (WIFEXITED(status))
-        shell->status_last_command = WEXITSTATUS(status);
-    else if (WIFSIGNALED(status))
-    {
-        shell->status_last_command = 128 + WTERMSIG(status);
-        printf("%s: terminated by signal %d\n", node->cmd, WTERMSIG(status));
-    }
-    else
-        shell->status_last_command = 123456789;
-    
+	redir = node->redirections;
+	while (redir)
+	{
+		result = check_redirections(shell, redir);
+		if (result == 1)
+			set_status_last_command_return(shell, 1);
+		if (result == 2)
+			break ;
+		redir = redir->next;
+	}
+	if (node->left)
+	{
+		if (prescan_redirections(node->left, shell))
+			return (1);
+	}
+	if (node->right)
+	{
+		if (prescan_redirections(node->right, shell))
+			return (1);
+	}
+	return (0);
 }
 
-void     handle_redirections(t_ast *node, int in_fd, int out_fd, t_shell *shell)
+static void	execute_ast(t_shell *shell, t_ast *node, int in_fd, int out_fd)
 {
-    int fd_read;
-    int fd_write;
-    int heredoc_pipe[2];
-    t_redirect *redir;
-
-    redir = node->redirections;
-    if (in_fd != STDIN_FILENO)
-    {
-        dup2(in_fd, STDIN_FILENO);
-        close(in_fd);
-    }
-    if (out_fd != STDOUT_FILENO)
-    {
-        dup2(out_fd, STDOUT_FILENO);
-        close(out_fd);
-    }
-    while(redir)
-    {
-        if (redir->type == NODE_REDIRECT_IN)
-            handle_inputfile(&fd_read, node, shell);
-        if (redir->type == NODE_REDIRECT_OUT)
-            handle_outputfile(&fd_write, node, shell);
-        if (redir->type == NODE_HEREDOC)
-            handle_heredoc(heredoc_pipe, node, shell);
-        redir = redir->next;
-    }
+	if (node->type == NODE_PIPE)
+	{
+		if (pipe(shell->pipes[shell->pipe_index]) == -1)
+		{
+			perror("minishell: pipe");
+			return ;
+		}
+		shell->pipe_index++;
+		execute_ast(shell, node->left, in_fd, shell->pipes[shell->pipe_index
+			- 1][1]);
+		shell->index++;
+		execute_ast(shell, node->right, shell->pipes[shell->pipe_index
+			- shell->index][0], out_fd);
+	}
+	else if (node->type == NODE_COMMAND)
+		execute_command(shell, node, in_fd, out_fd);
 }
 
-void execute_pipeline(t_shell *shell)
+static void	wait_for_children(t_shell *shell)
 {
-    int in_fd;
-    int out_fd;
+	int	i;
+	int	status;
 
-    in_fd = STDIN_FILENO;
-    out_fd = STDOUT_FILENO;
-    execute_ast(shell, shell->node, in_fd, out_fd);
-    if (shell->status_last_command == 123456789)
-    {
-        ft_putendl_fd("minishell: Error: failed to exit normally", 2);
-    }
+	i = 0;
+	while (i < shell->pid_index)
+	{
+		waitpid(shell->pid[i], &status, 0);
+		if (WIFEXITED(status))
+			shell->status_last_command = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+		{
+			shell->status_last_command = 128 + WTERMSIG(status);
+			if (WTERMSIG(status) == SIGINT)
+				printf("\n");
+			if (WTERMSIG(status) == SIGQUIT)
+				printf("Quit (core dumped)\n");
+		}
+		i++;
+	}
+}
 
+void	execute_pipeline(t_shell *shell)
+{
+	int	in_fd;
+	int	out_fd;
+
+	if (heredoc_interrupt(shell))
+		return ;
+	if (initialize_pid_array(shell))
+		return ;
+	in_fd = STDIN_FILENO;
+	out_fd = STDOUT_FILENO;
+	if (initialize_pipes(shell))
+		return ;
+	if (prescan_redirections(shell->node, shell) == 1)
+		return ;
+	if (!shell->node->cmd && shell->node->type == NODE_COMMAND)
+		return ;
+	else
+	{
+		signal(SIGINT, SIG_IGN);
+		execute_ast(shell, shell->node, in_fd, out_fd);
+	}
+	close_pipes(shell);
+	wait_for_children(shell);
+	unlink_heredoc_fd(shell->node);
+	setup_signal_handlers();
 }

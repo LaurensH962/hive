@@ -6,7 +6,7 @@
 #    By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/06 16:15:07 by lhaas             #+#    #+#              #
-#    Updated: 2025/03/19 15:04:32 by lhaas            ###   ########.fr        #
+#    Updated: 2025/04/01 16:59:48 by lhaas            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,8 @@ SRC			= ./ft_atoi.c ./ft_bzero.c ./ft_calloc.c ./ft_isalnum.c \
 			./ft_isspace.c ./ft_lstadd_back_bonus.c ./ft_lstadd_front_bonus.c \
 			./ft_lstclear_bonus.c ./ft_lstdelone_bonus.c ./ft_lstiter_bonus.c \
 			./ft_lstlast_bonus.c ./ft_lstmap_bonus.c ./ft_lstnew_bonus.c \
-			./ft_lstsize_bonus.c ./ft_strndup.c ./ft_strcmp.c ./ft_strncat.c
+			./ft_lstsize_bonus.c ./ft_strndup.c ./ft_strcmp.c ./ft_strncat.c \
+			./ft_strtok_r.c
 
 OBJS		= $(SRC:.c=.o)
 

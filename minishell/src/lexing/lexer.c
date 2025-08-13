@@ -3,107 +3,128 @@
 /*                                                        :::      ::::::::   */
 /*   lexer.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablodorn <ablodorn@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/06 09:50:03 by lhaas             #+#    #+#             */
-/*   Updated: 2025/03/24 16:02:35 by ablodorn         ###   ########.fr       */
+/*   Created: 2025/05/19 16:18:34 by lhaas             #+#    #+#             */
+/*   Updated: 2025/05/19 16:18:34 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// ft_itoa(last_exit_status)
-char	*expand_variable(const char *input, size_t *pos)
+static t_token	*inner_loop(int *pos, char *quote_char, char **token_value,
+		t_lexer *lexer)
 {
-	size_t	start;
-	char	var_name[256];
-	char	*expanded_value;
-	char	*env_value;
-	size_t	i;
-
-	start = *pos + 1;
-	i = 0;
-	while (input[start] && (ft_isalnum(input[start]) || input[start] == '_')
-		&& i < 255)
-		var_name[i++] = input[start++];
-	var_name[i] = '\0';
-	if (i == 0)
-		return (ft_strdup(""));
-	if (ft_strcmp(var_name, "?") == 0)
-		return ("last exit status");
-	if (ft_strcmp(var_name, "$") == 0)
-		return (ft_itoa(getpid()));
-	env_value = getenv(var_name);
-	if (env_value)
-		expanded_value = ft_strdup(env_value);
-	else
-		expanded_value = ft_strdup("");
-	*pos = start;
-	return (expanded_value);
-}
-
-char	*find_expanded_value(t_lexer *lexer, char *token_value)
-{
-	char	*expanded_value;
-
-	expanded_value = expand_variable(lexer->input, &(lexer->pos));
-	if (!expanded_value)
-		return (NULL);
-	token_value = ft_strjoin(token_value, expanded_value);
-	free(expanded_value);
-	return (token_value);
-}
-
-int	is_delimiter(char c)
-{
-	if (c == '|' || c == '<' || c == '>')
-		return (0);
-	return (1);
-}
-
-t_token	*create_delim_token(t_lexer *lexer)
-{
-	if (lexer->input[lexer->pos] == '|')
-		return (lexer->pos++, new_token(TOKEN_PIPE, "|"));
-	if (lexer->input[lexer->pos] == '>')
+	while (lexer->input[*pos])
 	{
-		if (lexer->input[lexer->pos + 1] == '>')
-			return (lexer->pos += 2, new_token(TOKEN_APPEND, ">>"));
-		return (lexer->pos++, new_token(TOKEN_REDIRECT_OUT, ">"));
+		if (inner_quotes_expand(quote_char, lexer, pos, token_value) == -1)
+			continue ;
+		else if (!*quote_char && (ft_isspace(lexer->input[*pos])
+				|| !is_delimiter(lexer->input[*pos])))
+		{
+			if (*token_value == NULL)
+				return (new_token(TOKEN_INVALID, ""));
+			break ;
+		}
+		if (*token_value != NULL)
+			*token_value = ft_strncat(*token_value, &lexer->input[*pos], 1);
+		else
+		{
+			*token_value = ft_strndup(&lexer->input[*pos], 1);
+			if (!*token_value)
+				return (new_token(TOKEN_ERROR, "Memory allocation error"));
+		}
+		(*pos)++;
 	}
-	if (lexer->input[lexer->pos] == '<')
-	{
-		if (lexer->input[lexer->pos + 1] == '<')
-			return (lexer->pos += 2, new_token(TOKEN_HEREDOC, "<<"));
-		return (lexer->pos++, new_token(TOKEN_REDIRECT_IN, "<"));
-	}
-	else
-		return (NULL);
+	if (*token_value == NULL)
+		return (new_token(TOKEN_INVALID, ""));
+	return (NULL);
 }
 
-t_token	*lexer(char *line, char **env)
+t_token	*lexer_next_token(t_lexer *lexer, t_token *temp_token, char quote_char,
+		char *token_value)
+{
+	lexer->was_quoted = 0;
+	lexer->was_expanded = 0;
+	while (lexer->input[lexer->pos])
+	{
+		if (lexer_skip_whitespaces(lexer, quote_char))
+			continue ;
+		temp_token = lexer_try_delim_token(lexer, quote_char);
+		if (temp_token)
+			return (temp_token);
+		token_value = ft_calloc(1, ft_strlen(lexer->input) + 1);
+		if (!token_value)
+			return (free(temp_token), (t_token *)perror_return());
+		temp_token = inner_loop((int *)&lexer->pos, &quote_char, &token_value,
+				lexer);
+		if (temp_token)
+			return (free(token_value), temp_token);
+		if (quote_char)
+			return (free(token_value), new_token(TOKEN_ERROR,
+					"Unclosed quote"));
+		if (token_value == NULL)
+			continue ;
+		temp_token = lexer_process_token_value(lexer, token_value);
+		return (free(token_value), temp_token);
+	}
+	return (free(token_value), new_token(TOKEN_EOF, NULL));
+}
+
+static t_token	*lexer_process_tokens(t_lexer *lexer, t_token **tokens,
+		t_shell *shell)
+{
+	t_token	*current_token;
+
+	current_token = lexer_next_token(lexer, NULL, '\0', NULL);
+	if (!current_token || current_token->type == TOKEN_ERROR)
+		return (free_tokens(shell), NULL);
+	if (current_token->type == TOKEN_PIPE)
+		shell->pipe_count++;
+	while (current_token->type != TOKEN_EOF)
+	{
+		if (current_token->type != TOKEN_HEREDOC && lexer->hereflag == '<')
+			lexer->hereflag = '\0';
+		if (current_token->type == TOKEN_ERROR)
+		{
+			add_token(tokens, current_token);
+			return (*tokens);
+		}
+		add_token(tokens, current_token);
+		current_token = lexer_next_token(lexer, NULL, '\0', NULL);
+		if (!current_token)
+			return (free_tokens(shell), NULL);
+		if (current_token->type == TOKEN_PIPE)
+			shell->pipe_count++;
+	}
+	add_token(tokens, current_token);
+	return (*tokens);
+}
+
+static void	init_lexer(t_token **tokens, t_lexer *lexer, t_shell *shell,
+		char *line)
+{
+	*tokens = NULL;
+	lexer->input = line;
+	lexer->pos = 0;
+	lexer->shell = shell;
+	lexer->hereflag = '\0';
+}
+
+t_token	*lexer(char *line, t_shell *shell)
 {
 	t_lexer	lexer;
 	t_token	*tokens;
-	t_token	*current_token;
+	t_token	*result;
 
 	tokens = NULL;
-	current_token = NULL;
-	lexer.input = line;
-	lexer.pos = 0;
-	current_token = lexer_next_token(&lexer, NULL, '\0', NULL);
-	while (current_token->type != TOKEN_EOF)
+	shell->tokens = tokens;
+	init_lexer(&tokens, &lexer, shell, line);
+	result = lexer_process_tokens(&lexer, &tokens, shell);
+	if (result == NULL)
 	{
-		if (current_token->type == TOKEN_ERROR)
-		{
-			fprintf(stderr, "Lexer error: %s\n", current_token->value);
-			free_tokens(tokens);
-			free(current_token);
-			return (NULL);
-		}
-		add_token(&tokens, current_token);
-		current_token = lexer_next_token(&lexer, NULL, '\0', NULL);
+		free(line);
+		return (NULL);
 	}
-	add_token(&tokens, current_token);
-	return (tokens);
+	return (result);
 }

@@ -3,100 +3,70 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ablodorn <ablodorn@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: lhaas <lhaas@student.hive.fi>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/12 09:58:59 by lhaas             #+#    #+#             */
-/*   Updated: 2025/03/24 13:32:14 by ablodorn         ###   ########.fr       */
+/*   Created: 2025/05/19 16:20:29 by lhaas             #+#    #+#             */
+/*   Updated: 2025/05/19 16:20:29 by lhaas            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include <stdbool.h>
 
-bool	is_redirect(t_token_type type);
-
-t_token	*get_next_token(t_token **tokens)
+static int	parse_command_helper(t_token **tokens, t_token *token,
+		t_ast *command_node)
 {
-	t_token	*current;
-
-	if (*tokens == NULL)
-		return (NULL);
-	current = *tokens;
-	*tokens = (*tokens)->next;
-	return (current);
-}
-
-t_ast	*parse_redirection(t_token **tokens, t_ast *command,
-		t_token *redirection_token, t_token *filename_token)
-{
-	t_redirect	*redir;
-	t_redirect	**redir_ptr;
-
-	redir_ptr = &command->redirections;
+	token = skip_invalid_node(token, tokens);
 	while (*tokens && is_redirect((*tokens)->type))
-	{
-		redirection_token = get_next_token(tokens);
-		filename_token = get_next_token(tokens);
-		if (!filename_token || filename_token->type != TOKEN_WORD)
-			return (NULL);
-		redir = ft_calloc(1, sizeof(t_redirect));
-		redir->file = ft_strdup(filename_token->value);
-		redir->next = NULL;
-		if (redirection_token->type == TOKEN_REDIRECT_OUT)
-			redir->type = NODE_REDIRECT_OUT;
-		else if (redirection_token->type == TOKEN_REDIRECT_IN)
-			redir->type = NODE_REDIRECT_IN;
-		else if (redirection_token->type == TOKEN_APPEND)
-			redir->type = NODE_APPEND;
-		else if (redirection_token->type == TOKEN_HEREDOC)
-			redir->type = NODE_HEREDOC;
-		while (*redir_ptr)
-			redir_ptr = &(*redir_ptr)->next;
-		*redir_ptr = redir;
-	}
-	return (command);
+		command_node = parse_redirection(tokens, command_node, NULL, NULL);
+	if (*tokens == NULL || ((*tokens)->type != TOKEN_WORD
+			&& (*tokens)->type != TOKEN_INVALID))
+		return (-1);
+	return (0);
 }
 
-/*	command_node->type = NODE_COMMAND;
-	command_node->cmd = NULL;
-	command_node->args = NULL;
-	command_node->redirections = NULL;
-	command_node->left = NULL;
-	command_node->right = NULL;
-	command_node = parse_redirection(tokens, command_node);*/
+static t_ast	*init_node(t_ast *command_node, t_token **tokens,
+		int args_capacity)
+{
+	command_node = ft_calloc(1, sizeof(t_ast));
+	if (!command_node)
+		return ((t_ast *)perror_return());
+	command_node = parse_redirection(tokens, command_node, NULL, NULL);
+	command_node->args = ft_calloc(sizeof(char *), args_capacity);
+	if (!command_node->args)
+	{
+		free (command_node);
+		return ((t_ast *)perror_return());
+	}
+	return (command_node);
+}
+
 t_ast	*parse_command(t_token **tokens, t_token *token, int arg_count,
 		int args_capacity)
 {
 	t_ast	*command_node;
-	char	**args;
 
-	command_node = ft_calloc(1, sizeof(t_ast));
-	command_node->type = NODE_COMMAND;
-	command_node->cmd_path = NULL;
-	command_node = parse_redirection(tokens, command_node, NULL, NULL);
-	if (*tokens == NULL || (*tokens)->type != TOKEN_WORD || !command_node)
+	command_node = NULL;
+	command_node = init_node(command_node, tokens, args_capacity);
+	if (!command_node)
+		return (NULL);
+	token = skip_invalid_node(token, tokens);
+	if (*tokens == NULL || ((*tokens)->type != TOKEN_WORD
+			&& (*tokens)->type != TOKEN_INVALID) || !command_node)
 		return (command_node);
 	token = get_next_token(tokens);
-	command_node->cmd = ft_strdup(token->value);
-	args = ft_calloc(sizeof(char *), args_capacity);
-	args[arg_count++] = ft_strdup(token->value);
+	if (fill_command_node(&command_node, token, &arg_count))
+		return (NULL);
 	while (*tokens)
 	{
-		while (*tokens && is_redirect((*tokens)->type))
-			command_node = parse_redirection(tokens, command_node, NULL, NULL);
-		if (*tokens == NULL || (*tokens)->type != TOKEN_WORD)
+		if (parse_command_helper(tokens, token, command_node) == -1)
 			break ;
 		if (arg_count >= args_capacity - 1)
-		{
-			args_capacity *= 2;
-			args = ft_realloc(args, sizeof(char *) * args_capacity / 2,
-					sizeof(char *) * args_capacity);
-		}
+			command_node->args = resize_a(command_node->args, &args_capacity);
 		token = get_next_token(tokens);
-		args[arg_count++] = ft_strdup(token->value);
+		if (fill_args(&command_node, token, &arg_count))
+			return (NULL);
 	}
-	args[arg_count] = NULL;
-	command_node->args = args;
+	command_node->args[arg_count] = NULL;
 	return (command_node);
 }
 
@@ -136,8 +106,6 @@ t_ast	*parse(t_token *tokens)
 
 	tree = parse_pipeline(&tokens, NULL, NULL, NULL);
 	if (!tree)
-	{
-		return(NULL);
-	}
+		return (NULL);
 	return (parse_redirection(&tokens, tree, NULL, NULL));
 }
