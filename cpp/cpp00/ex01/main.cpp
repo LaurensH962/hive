@@ -1,18 +1,18 @@
-#include "phonebook.hpp"
+#include "PhoneBook.hpp"
 
 int main(void)
 {
-    std::cout << "You opened a phonebook. what do you want to do?" << std::endl;
-    display_start_prompt();
+    std::cout << "You opened a PhoneBook. what do you want to do?" << std::endl;
+    displayStartPrompt();
     std::string input;
     PhoneBook phone_book;
     while (1)
     {
-        safe_getline(input);
+        safeGetline(input);
         if (input == "ADD")
-            phone_book.add_contact();
+            phone_book.addContact();
         else if (input == "SEARCH")
-            phone_book.search_contacts(); 
+            phone_book.searchContacts(); 
         else if (input == "EXIT")
             break;
         else
@@ -20,7 +20,7 @@ int main(void)
             std::cout << "No valid input. Try 'ADD', 'SEARCH' or 'EXIT' \n" << std::endl;
             continue;
         }
-        display_start_prompt();
+        displayStartPrompt();
     }
     std::cout << "You closed the phone book\n";
     return (0);

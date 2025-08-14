@@ -8,11 +8,12 @@ class Zombie {
     private:
         std::string _name;
     public:
-        Zombie(std::string name) : _name(name) {}
+        Zombie(){}
+        // Zombie(std::string name) : _name(name) {}
         void announce( void );
+        void setName(std::string name) { _name = name; };
 };
 
-Zombie* newZombie( std::string name );
-void    randomChump( std::string name );
+Zombie* zombieHorde( int N, std::string name );
 
 #endif

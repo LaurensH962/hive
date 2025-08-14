@@ -1,6 +1,6 @@
-#include "phonebook.hpp"
+#include "PhoneBook.hpp"
 
-void    safe_getline(std::string &input)
+void    safeGetline(std::string &input)
 {
     while (true)
     {
@@ -35,9 +35,9 @@ std::string truncate(std::string str, size_t width)
     return str;
 }
 
-void    display_start_prompt()
+void    displayStartPrompt()
 {
     std::cout << "\ntype 'ADD' to create new contact." << std::endl;
     std::cout << "type 'SEARCH' to search for existing contact." << std::endl;
-    std::cout << "type 'EXIT' to close the phonebook.\n" << std::endl;
+    std::cout << "type 'EXIT' to close the PhoneBook.\n" << std::endl;
 }

@@ -1,9 +1,9 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror
 
-NAME = BraiiiiiiinnnzzzZ
+NAME = MoarBrainz
 
-SRCS = main.cpp Zombie.cpp newZombie.cpp randomChump.cpp
+SRCS = main.cpp Zombie.cpp zombieHorde.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)

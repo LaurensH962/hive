@@ -1,6 +1,6 @@
 #include <iostream>
 
-void to_upper(std::string &s) {
+void myToUpper(std::string &s) {
     for (size_t i = 0; i < s.length(); ++i) {
         s[i] = std::toupper(s[i]);
     }
@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
     }
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
-        to_upper(arg);
+        myToUpper(arg);
         std::cout << arg;
     }
     std::cout << std::endl;
