@@ -1,7 +1,7 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror
 
-NAME = hiThisIsBrain
+NAME = sedIsForLosers
 
 SRCS = main.cpp 
 OBJS = $(SRCS:.cpp=.o)

@@ -1,9 +1,9 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror
 
-NAME = hiThisIsBrain
+NAME = unnecessaryViolence
 
-SRCS = main.cpp 
+SRCS = main.cpp HumanA.cpp HumanB.cpp Weapon.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
