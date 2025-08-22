@@ -3,7 +3,7 @@ CXXFLAGS = -Wall -Wextra -Werror
 
 NAME = myFirstClassInOCF
 
-SRCS = main.cpp
+SRCS = main.cpp Fixed.cpp
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
