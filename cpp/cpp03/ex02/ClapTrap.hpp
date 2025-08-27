@@ -7,7 +7,6 @@
 #define C_GREEN       "\033[32m"
 #define C_BLUE        "\033[34m"
 
-
 class ClapTrap{
     protected:
         std::string _name;
