@@ -4,15 +4,17 @@
 
 const int SIZE = 10;
 
-void testAnimal(){
-    Animal frog("dartfrog");
-    Animal toad(frog);
-    Animal tadpole = frog;
-    frog.makeSound();
-    toad.makeSound();
-    tadpole.makeSound();
-    return ;
-}
+// this is not possible anymore since Aimal is abstract. uncomment to test
+
+// void testAnimal(){
+//     Animal frog("dartfrog");
+//     Animal toad(frog);
+//     Animal tadpole = frog;
+//     frog.makeSound();
+//     toad.makeSound();
+//     tadpole.makeSound();
+//     return ;
+// }
 
 void testCat(){
     Cat tiger;
@@ -64,7 +66,7 @@ void testBrain() {
 int main()
 {
     testBrain();
-    testAnimal();
+    //testAnimal(); not working anymore because abstract class --> intended
     testCat();
     testDog();
 

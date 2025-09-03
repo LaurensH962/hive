@@ -1,7 +1,8 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -MMD -MP
 
-NAME = worldOnFire
+NAME = abstractClass
+
 SRCS = main.cpp Animal.cpp Dog.cpp Cat.cpp Brain.cpp
 OBJDIR = build
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
