@@ -4,18 +4,25 @@ CXXFLAGS = -Wall -Wextra -Werror
 NAME = Polymorphism
 
 SRCS = main.cpp Animal.cpp Dog.cpp Cat.cpp WrongAnimal.cpp WrongCat.cpp
-OBJS = $(SRCS:.cpp=.o)
+OBJDIR = build
+OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
+DEP = $(OBJS:.o=.d)
 
 all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)
 
-%.o: %.cpp
+$(OBJDIR)/%.o: %.cpp | $(OBJDIR)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
+
+-include $(DEP)
+
 clean:
-	rm -f $(OBJS)
+	rm -rf $(OBJDIR)
 
 fclean: clean
 	rm -f $(NAME)

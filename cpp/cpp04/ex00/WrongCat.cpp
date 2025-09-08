@@ -13,3 +13,8 @@ WrongCat::WrongCat(const WrongCat& other) : WrongAnimal(){
 WrongCat::~WrongCat(){
     std::cout << "WrongCat destructor called" << std::endl;
 }
+
+
+void WrongAnimal::makeSound() const{
+    std::cout << "WrongCat makes a wrong CAT sound" << std::endl;
+}
