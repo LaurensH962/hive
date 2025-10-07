@@ -19,7 +19,6 @@ Animal& Animal::operator=(const Animal& other){
     return *this;
 }
 
-
 Animal::~Animal(){
     std::cout << "Animal destructor called" << std::endl;
 }

@@ -16,9 +16,14 @@ void testAnimal(){
 }
 
 void testWrongCat(){
+    std::cout << "-- wrong cat as animal --" << std::endl;
     const WrongAnimal* wrong = new WrongCat();
     wrong->makeSound();
     delete wrong;
+
+    std::cout << "-- now actual wrong cat --" << std::endl;
+    WrongCat wCAT;
+    wCAT.makeSound();
 }
 
 void testCat(){

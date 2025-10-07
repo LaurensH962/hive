@@ -15,6 +15,6 @@ WrongCat::~WrongCat(){
 }
 
 
-void WrongAnimal::makeSound() const{
+void WrongCat::makeSound() const{
     std::cout << "WrongCat makes a wrong CAT sound" << std::endl;
 }
