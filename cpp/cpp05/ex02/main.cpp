@@ -1,36 +1,33 @@
 #include "Bureaucrat.hpp"
+#include "ShrubberyCreationForm.hpp"
 
 int main(void) {
     try {
         Bureaucrat bur("A", 10);
-        Form form("form A", 40, 20);
-        bur.signForm(form, bur);
-        std::cout << bur << form << std::endl;
+        ShrubberyCreationForm shrub("home");
+        bur.signForm(shrub, bur);
+        shrub.execute(bur);
     }
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
     }
-
     try {
-        Bureaucrat bur("B", 10);
-        Form form("form B", 9, 9);
-        bur.signForm(form, bur);
-
-        std::cout << bur << form << std::endl;
+        Bureaucrat bur("B", 140);
+        ShrubberyCreationForm toilet("toilet");
+        bur.signForm(toilet, bur);
+        toilet.execute(bur);
     }
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
     }
-
     try {
-        Bureaucrat bur("B", 10);
-        Form form("form B", 11, 12);
-        bur.signForm(form, bur);
-        std::cout << bur << form << std::endl;
+        Bureaucrat bur("C", 160);
+        ShrubberyCreationForm toilet("roof");
+        bur.signForm(toilet, bur);
+        toilet.execute(bur);
     }
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
     }
-    
     return 0;
 }

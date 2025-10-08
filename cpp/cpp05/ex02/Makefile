@@ -1,9 +1,9 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -g
 
-NAME = forms
+NAME = execute
 
-SRCS = main.cpp Bureaucrat.cpp Form.cpp
+SRCS = main.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp
 OBJDIR = build
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
 DEP = $(OBJS:.o=.d)

@@ -33,7 +33,7 @@ void Bureaucrat::decrementGrade(){
         std::cout << "Bureaucrat " << _name << "'s grade has been decremented to " << _grade << std::endl;
 }
 
-void Bureaucrat::signForm(Form& form, const Bureaucrat& bur) {
+void Bureaucrat::signForm(AForm& form, const Bureaucrat& bur) {
     form.beSigned(bur);
     if (form.getSignature())
         std::cout << _name<< " signed " << form.getName() << std::endl; 
