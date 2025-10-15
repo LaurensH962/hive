@@ -33,6 +33,7 @@ class Bureaucrat {
         void incrementGrade();
         void decrementGrade();
         void signForm(AForm& form, const Bureaucrat& bur);
+        void executeForm(AForm const & form) const ;
 };
 
 std::ostream& operator<<(std::ostream& os, const Bureaucrat& bur);

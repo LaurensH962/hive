@@ -25,5 +25,4 @@ AForm* Intern::makeForm(std::string name, std::string target) {
         }
     }
     throw FormNotFound();
-    return nullptr;
 }

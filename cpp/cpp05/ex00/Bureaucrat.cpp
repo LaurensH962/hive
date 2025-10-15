@@ -19,14 +19,16 @@ std::string Bureaucrat::getName() const { return _name; }
 int Bureaucrat::getGrade() const { return _grade; }
 
 void Bureaucrat::incrementGrade(){
-    if (_grade-- < MAX_GRADE)
+    _grade--;
+    if (_grade < MAX_GRADE)
         throw GradeTooHighException();
     else
         std::cout << "Bureaucrat " << _name << "'s grade has been incremented to " << _grade << std::endl;
 }
 
 void Bureaucrat::decrementGrade(){
-    if (_grade++ > MIN_GRADE)
+    _grade++;
+    if (_grade > MIN_GRADE)
         throw GradeTooLowException();
     else
         std::cout << "Bureaucrat " << _name << "'s grade has been decremented to " << _grade << std::endl;

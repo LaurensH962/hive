@@ -9,7 +9,7 @@ int main(void) {
         Bureaucrat bur("A", 10);
         ShrubberyCreationForm shrub("home");
         bur.signForm(shrub, bur);
-        shrub.execute(bur);
+        bur.executeForm(shrub);
     }
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
@@ -18,7 +18,7 @@ int main(void) {
         Bureaucrat bur("B", 140);
         ShrubberyCreationForm toilet("toilet");
         bur.signForm(toilet, bur);
-        toilet.execute(bur);
+        bur.executeForm(toilet);
     }
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
@@ -27,7 +27,7 @@ int main(void) {
         Bureaucrat bur("C", 160);
         ShrubberyCreationForm toilet("roof");
         bur.signForm(toilet, bur);
-        toilet.execute(bur);
+        bur.executeForm(toilet);
     }
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
@@ -41,7 +41,7 @@ int main(void) {
         Bureaucrat bur("ROBO", 10);
         RobotomyRequestForm newRobo("biipbuuPbIIp");
         bur.signForm(newRobo, bur);
-        newRobo.execute(bur);
+        bur.executeForm(newRobo);
     }
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
