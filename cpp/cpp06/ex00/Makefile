@@ -1,9 +1,9 @@
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -g
+CXXFLAGS = -Wall -Wextra -Werror -MMD -MP
 
-NAME = intern
+NAME = scalarConverter
 
-SRCS = main.cpp Bureaucrat.cpp AForm.cpp ShrubberyCreationForm.cpp RobotomyRequestForm.cpp PresidentialPardonForm.cpp Intern.cpp
+SRCS = main.cpp ScalarConverter.cpp
 OBJDIR = build
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
 DEP = $(OBJS:.o=.d)
