@@ -36,11 +36,11 @@ void printFloat(const float& inputFloat, bool valid) {
         else
             std::cout << "inff"; 
     else 
-        std::cout << inputFloat << "f";
+        std::cout << std::fixed << std::setprecision(1) << inputFloat << "f";
     std::cout << std::endl;
 }
 
-void printDouble(const float& inputDouble, bool valid) {
+void printDouble(const double& inputDouble, bool valid) {
     std::cout << "double: ";
     if (!valid) {
         std::cout << "impossible" << std::endl;
@@ -59,10 +59,7 @@ void printDouble(const float& inputDouble, bool valid) {
 }
 
 void printInvalid() {
-    std::cout   << "int: impossible\n"
-                << "char: impossible\n"
-                << "float: impossible\n"
-                << "double: impossible" << std::endl;
+    std::cout   << "not valid literal" << std::endl;
 
 }
 
@@ -88,6 +85,9 @@ InputType findType(const std::string& input){
         if (idx == input.size())
             return InputType::Int;
     } catch (...) {}
+    if (!(input.find('.') != std::string::npos)){
+        return InputType::Invalid;
+    }
     bool isFloatSuffix = (lower.back() == 'f');
     std::string numPart = input;
     if (isFloatSuffix)
@@ -158,7 +158,7 @@ void ScalarConverter::convert(std::string input) {
         }
         case InputType::Double: {
             try {
-                float value = stod(input);
+                double value = stod(input);
                 if (value < 0 || value > 255)
                     printChar(0, false);
                 else
@@ -169,10 +169,10 @@ void ScalarConverter::convert(std::string input) {
                     printInt(0, false);
                 else
                     printInt(static_cast<int>(value), true);
-                // if (value < std::numeric_limits<float>::min() || value > std::numeric_limits<float>::max())
-                //     printFloat(0, false);
-                // else
-                printFloat(static_cast<float>(value), true);
+                if (value < std::numeric_limits<float>::min() || value > std::numeric_limits<float>::max())
+                    printFloat(0, false);
+                else
+                    printFloat(static_cast<float>(value), true);
                 printDouble(value, true);
             }
             catch (const std::out_of_range&) {
