@@ -60,7 +60,6 @@ void printDouble(const double& inputDouble, bool valid) {
 
 void printInvalid() {
     std::cout   << "not valid literal" << std::endl;
-
 }
 
 InputType findType(const std::string& input){
@@ -85,7 +84,7 @@ InputType findType(const std::string& input){
         if (idx == input.size())
             return InputType::Int;
     } catch (...) {}
-    if (!(input.find('.') != std::string::npos)){
+    if (!(input.find('.') != std::string::npos)) {
         return InputType::Invalid;
     }
     bool isFloatSuffix = (lower.back() == 'f');
