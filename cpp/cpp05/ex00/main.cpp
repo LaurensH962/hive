@@ -32,7 +32,26 @@ int main(void) {
         Bureaucrat bur1("patrik", 1);
         Bureaucrat bur2("patricia", 150);
         std::cout << bur1 << bur2 << std::endl;
+        std::cout << "trying to increment grade of " << bur2.getName() << std::endl;
+        bur2.incrementGrade();
+        std::cout << "trying to increment grade of " << bur1.getName() << std::endl;
+        bur1.incrementGrade();
     }
+    
+    catch (std::exception& e) {
+        std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
+    }
+
+    try {
+        Bureaucrat bur1("jack", 1);
+        Bureaucrat bur2("jaqueline", 150);
+        std::cout << bur1 << bur2 << std::endl;
+        std::cout << "trying to decrement grade of " << bur1.getName() << std::endl;
+        bur1.decrementGrade();
+        std::cout << "trying to decrement grade of " << bur2.getName() << std::endl;
+        bur2.decrementGrade();
+    }
+    
     catch (std::exception& e) {
         std::cerr << "Exception error encountered: " << e.what() << "\n" << std::endl;
     }
