@@ -1,5 +1,5 @@
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -MMD -MP
+CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -std=c++20
 
 NAME = scalarConverter
 

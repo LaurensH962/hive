@@ -1,7 +1,7 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -MMD -MP
 
-NAME = funcTemps
+NAME = array
 
 SRCS = main.cpp
 OBJDIR = build

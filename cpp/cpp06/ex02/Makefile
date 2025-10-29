@@ -1,9 +1,9 @@
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -MMD -MP
+CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -std=c++20
 
 NAME = identiify
 
-SRCS = main.cpp
+SRCS = main.cpp Base.cpp
 OBJDIR = build
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
 DEP = $(OBJS:.o=.d)

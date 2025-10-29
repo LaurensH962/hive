@@ -1,6 +1,5 @@
 #include "Base.hpp"
 #include <time.h>
-#include <fstream>
 #include <iostream>
 
 Base* generate(void){
@@ -50,12 +49,14 @@ void identify(Base& p) {
         std::cout << "C" << std::endl;
         return;
     } catch (...) {}
-
     std::cout << "Unknown type" << std::endl;
 }
 
 int main (void){
     srand(time(NULL));
     Base* ptr = generate();
-    delete ptr;
+    identify(ptr);
+    identify(*ptr);
+    if (ptr != nullptr)
+        delete ptr;
 }

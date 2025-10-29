@@ -2,10 +2,10 @@ template <typename T>
 Array<T>::Array() : _data(nullptr), _size(0) {}
 
 template <typename T>
-Array<T>::Array(const unsigned int& u) : _data(new T[u]()), _size(u) {}
+Array<T>::Array(const unsigned int& n) : _data(new T[n]()), _size(n) {}
 
 template <typename T>
-Array<T>::Array(const Array& other) {
+Array<T>::Array(const Array& other) : _data(nullptr), _size(0) {
     *this = other;
 }
 
@@ -30,6 +30,10 @@ T& Array<T>::operator[](size_t index) {
     return _data[index];
 }
 
+template <typename T>
+size_t Array<T>::size() const {
+    return _size;
+}
 
 template <typename T>
 Array<T>::~Array() {

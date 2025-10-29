@@ -168,7 +168,7 @@ void ScalarConverter::convert(std::string input) {
                     printInt(0, false);
                 else
                     printInt(static_cast<int>(value), true);
-                if (value < std::numeric_limits<float>::min() || value > std::numeric_limits<float>::max())
+                if ((value < std::numeric_limits<float>::min() || value > std::numeric_limits<float>::max()) && !std::isinf(value))
                     printFloat(0, false);
                 else
                     printFloat(static_cast<float>(value), true);
