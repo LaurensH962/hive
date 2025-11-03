@@ -16,4 +16,10 @@ class Span {
         void addNumber(const unsigned int& n);
         int shortestSpan();
         int longestSpan();
+        template <typename InputIterator>
+        void addNumber(InputIterator begin, InputIterator end){
+            if (std::distance(begin, end) + _values.size() > _max)
+                throw std::out_of_range("Adding this range would exceed Span capacity");
+            _values.insert(_values.end(), begin, end);
+        }
 };

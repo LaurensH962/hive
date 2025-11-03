@@ -1,9 +1,9 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -MMD -MP
 
-NAME = span
+NAME = mutantStack
 
-SRCS = main.cpp Span.cpp
+SRCS = main.cpp
 OBJDIR = build
 OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
 DEP = $(OBJS:.o=.d)
