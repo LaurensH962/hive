@@ -28,6 +28,10 @@ int main(int, char**)
             std::cerr << "didn't save the same value!!" << std::endl;
             return 1;
         }
+        // FOR EVAL
+        // else
+        //     std::cout << "same number\n";
+
     }
     try
     {
@@ -49,6 +53,8 @@ int main(int, char**)
     for (int i = 0; i < MAX_VAL; i++)
     {
         numbers[i] = rand();
+        // FOR EVAL
+        // std::cout << "numbers[i] = "  << numbers[i] << std::endl;
     }
     delete [] mirror;//
     return 0;

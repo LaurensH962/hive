@@ -1,6 +1,7 @@
 #include "MutantStack.hpp"
 #include <iostream>
 #include <deque>
+#include <vector>
 
 int main()
 {
@@ -28,6 +29,29 @@ int main()
     }
     std::stack<int> s(mstack);
 
+    /////
+    std::cout << "\n=== TEST MutantStack with defining vector as underlaying container ===\n";
+    MutantStack<int, std::vector<int>>  vecStack;
+    vecStack.push(5);
+    vecStack.push(17);
+    std::cout << vecStack.top() << std::endl;
+    vecStack.pop();
+    std::cout << vecStack.size() << std::endl;
+    vecStack.push(3);
+    vecStack.push(5);
+    vecStack.push(737);
+    //[...]
+    vecStack.push(0);
+    MutantStack<int, std::vector<int>>::iterator itVec = vecStack.begin();
+    MutantStack<int, std::vector<int>>::iterator iteVec = vecStack.end();
+    ++itVec;
+    --itVec;
+    while (itVec != iteVec)
+    {
+        std::cout << *itVec << std::endl;
+        ++itVec;
+    }
+    std::stack<int, std::vector<int>> sVec(vecStack);
 
 
     std::cout << "\n=== TEST with deque ===\n";

@@ -4,8 +4,8 @@
 #include "easyfind.hpp"
 
 int main() {
+    //VALID VECTOR
     std::vector<int> v = {1, 2 , 3, 4, 5};
-    //VALID
     try
     {
         auto it = easyfind(v, 3);
@@ -16,7 +16,7 @@ int main() {
         std::cerr << e.what() << '\n';
     }
 
-    //OUT OF BOUNDS
+    //INVALID: OUT OF BOUNDS
     try
     {
         auto it = easyfind(v, 23);
@@ -27,7 +27,7 @@ int main() {
         std::cerr << e.what() << '\n';
     }
 
-    //SET
+    //VALID SET
     std::set<int> s = {1, 2 , 3, 4, 5};
     try
     {
