@@ -59,6 +59,11 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "list": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp",
+        "queue": "cpp",
+        "ranges": "cpp",
+        "stack": "cpp"
     }
 }

@@ -11,7 +11,10 @@ bool BitcoinExchange::validateDate(std::string& date){
     std::tm tm{};
     std::istringstream ss(date);
     ss >> std::get_time(&tm, "%Y-%m-%d");
-    if (ss.fail())
+    std::chrono::year_month_day ymd{std::chrono::year{tm.tm_year + 1900}, 
+        std::chrono::month{static_cast<unsigned int>(tm.tm_mon + 1)}, 
+        std::chrono::day{static_cast<unsigned int>(tm.tm_mday)}};
+    if (!ymd.ok())
         return false;
     return true;
 }
@@ -33,7 +36,7 @@ void BitcoinExchange::findAndPrintMoney(std::string date, double value){
         std::cout << "Error: No earlier data available for " << date << std::endl;
         return;
     }
-    std::cout << date << "|== " << value << " = " << it->second * value << " ==|" << std::endl;
+    std::cout << date << " => " << value << " = " << it->second * value << std::endl;
 }
 
 void BitcoinExchange::checkFileValidity(std::ifstream& inputFile, std::ifstream& dataFile){
@@ -47,7 +50,7 @@ void BitcoinExchange::checkFileValidity(std::ifstream& inputFile, std::ifstream&
         if (std::regex_match(line, match, linePattern)){
             std::string date = match[1];
             if (!validateDate(date)){
-                 std::cout << "Error: bad input |== " << date << " ==|\n";
+                 std::cout << "Error: bad input => " << date << std::endl;
                  continue;
             }
             double value = std::stod(match[2]);
@@ -62,7 +65,7 @@ void BitcoinExchange::checkFileValidity(std::ifstream& inputFile, std::ifstream&
             findAndPrintMoney(date, value);
         }
         else {
-            std::cout << "Error: bad input |== " << line << " ==|\n";
+            std::cout << "Error: bad input => " << line << std::endl;
             continue;
         }
     }
