@@ -50,11 +50,10 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
 
     std::vector<Chunk> temp; //this will hold all our numbers in their respective chuncks
     size_t id_counter = 0;
-    for (size_t i = 0; i < vec.size(); i += pair_size) {
-        size_t end = i + pair_size;
+    for (size_t i = 0; i + pair_size <= vec.size(); i += pair_size) {
         Chunk c;
         c.id = id_counter++;
-        c.numbers.insert(c.numbers.end(), vec.begin() + i, vec.begin() + end);
+        c.numbers.insert(c.numbers.end(), vec.begin() + i, vec.begin() + i + pair_size);
         temp.push_back(c);
     }
 
@@ -103,39 +102,25 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
         jac = jac_temp;
     }
     // printChunks("MAIN", main);
+
+    // ------------------------------------------------------------
+    // 5. PUSH EVERYTHING BACK INTO ORIGINAL VECTOR TOGETHER WITH THE LEFTOVERS
+    // ------------------------------------------------------------
     std::vector<int> result;
 
-    // Push chunks from main in order
     for (const Chunk& c : main) {
         result.insert(result.end(), c.numbers.begin(), c.numbers.end());
     }
 
-    // Append leftovers (unchanged)
     size_t leftovers_start = (vec.size() / pair_size) * pair_size;
     result.insert(result.end(), vec.begin() + leftovers_start, vec.end());
 
-    // Replace vec with the final sorted content
     vec = std::move(result);
     std::cout << "VECTOR = ";
     for (int n: vec)
         std::cout << n << ' ';
     std::cout << std::endl;
-     /*
 
-
-    // NOW AS LONG AS THERE IS STUFF LEFT IN PENDING, INSERT THAT INTO MAIN BY JACOBSDAHL
-    {
-        while (!pend.empty()) {
-        ... insert;
-        }
-        then when all is inserted:
-            ------------------------------------------------------------
-            5. WRITE BACK MERGED RESULT INTO vec
-            ------------------------------------------------------------
-            push everything back into the original vec
-    }
-   
-*/
 
 }
 
