@@ -3,7 +3,10 @@
 #include <deque>
 #include <iostream>
 
-struct Chunk { std::vector<int> numbers; size_t id; };
+struct Chunk { 
+	std::vector<int> numbers; 
+	size_t id; 
+};
 
 
 class PmergeMe {
