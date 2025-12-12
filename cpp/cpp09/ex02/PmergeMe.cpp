@@ -1,7 +1,7 @@
 #include "PmergeMe.hpp"
 #include <algorithm>
 
-
+int comparison_count = 0;
 
 void printChunks(const std::string& label, const std::vector<Chunk>& chunks) {
     std::cout << label << ":\n";
@@ -12,6 +12,11 @@ void printChunks(const std::string& label, const std::vector<Chunk>& chunks) {
             std::cout << n << " ";
         std::cout << "}\n";
     }
+}
+
+inline bool less_than(const int& a,const int& b) {
+    comparison_count++;
+    return a < b;
 }
 
 void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
@@ -33,7 +38,7 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
             //     break;
             size_t mid = i + pair_size;
             size_t end = i + block_size;
-            if (vec[end - 1] < vec[mid - 1]) {
+            if (less_than(vec[end - 1] , vec[mid - 1])) {
                 std::swap_ranges(
                     vec.begin() + i,
                     vec.begin() + mid,
@@ -79,6 +84,46 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
     // ------------------------------------------------------------
     // 4. INSERT PENDING CHUNKS INTO MAIN CHUNKS
     // ------------------------------------------------------------
+//     std::sort(main.begin(), main.end(), [](const Chunk &a, const Chunk &b) {
+//     if (less_than(a.numbers.back(), b.numbers.back())) return true;
+//     if (a.numbers.back() == b.numbers.back() && a.id < b.id) return true;
+//     return false;
+// });
+
+// -------------------------------
+// Insert pending chunks into main using binary search + ID tie-breaking
+    // size_t jac = 3;
+    // size_t jac_prev = 1;
+
+    // while (!pend.empty()) {
+    //     size_t amount = jac - jac_prev;
+
+    //     for (size_t i = 0; i < amount && !pend.empty(); ++i) {
+    //         Chunk toInsert = pend.front();
+
+    //         // Binary search with maxima + ID tie-breaking
+    //         auto it = std::lower_bound(main.begin(), main.end(), toInsert,
+    //             [](const Chunk &c, const Chunk &pending) {
+    //                 // 'true' means 'c' is less than 'pending' (search continues)
+    //                 if (less_than(c.numbers.back(), pending.numbers.back()))
+    //                     return true;
+    //                 if (c.numbers.back() == pending.numbers.back() && c.id < pending.id)
+    //                     return true;
+    //                 return false;
+    //             });
+
+    //         // Insert pending chunk at correct position
+    //         main.insert(it, toInsert);
+
+    //         // Remove from pending
+    //         pend.erase(pend.begin());
+    //     }
+
+    //     // Update Jacobsthal numbers for next batch
+    //     size_t jac_temp = jac + 2 * jac_prev;
+    //     jac_prev = jac;
+    //     jac = jac_temp;
+    // }
     size_t jac = 3;
     size_t jac_prev = 1;
     while (!pend.empty()){
@@ -86,11 +131,12 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
        for (size_t i = 0; i < amount && !pend.empty(); i++){
             Chunk toInsert = pend.front();
             int top_max = toInsert.numbers.back();
+            
 
             auto it = main.begin();
             for (; it != main.end(); ++it){
                 std::cout << "pend max = " << top_max << ", main max = " << it->numbers.back() << std::endl;
-                if (top_max < it->numbers.back())
+                if (less_than( top_max , it->numbers.back()))
                     break;
             }
 
@@ -101,7 +147,7 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
         jac_prev = jac;
         jac = jac_temp;
     }
-    // printChunks("MAIN", main);
+    printChunks("MAIN", main);
 
     // ------------------------------------------------------------
     // 5. PUSH EVERYTHING BACK INTO ORIGINAL VECTOR TOGETHER WITH THE LEFTOVERS
@@ -127,4 +173,5 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
 void PmergeMe::sortVector(std::vector<int> &vec) {
     bool insert_stage = false;
     sortRecursive(vec, 1, insert_stage);
+    std::cout <<"COMPARISON COUNT: " << comparison_count << std::endl;
 }
