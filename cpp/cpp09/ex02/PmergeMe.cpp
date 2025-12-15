@@ -1,7 +1,6 @@
 #include "PmergeMe.hpp"
 #include <algorithm>
 
-int comparison_count = 0;
 
 void printChunks(const std::string& label, const std::vector<Chunk>& chunks) {
     std::cout << label << ":\n";
@@ -18,6 +17,18 @@ inline bool less_than(const int& a,const int& b) {
     comparison_count++;
     return a < b;
 }
+
+void print_vec(std::vector<int>& vec){
+    for (int n: vec)
+        std::cout << n << ' ';
+    std::cout << std::endl;
+}
+
+
+// -----------
+// SORT Vector
+// -----------
+
 
 void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
 {
@@ -77,69 +88,28 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
         else
             main.push_back(temp[i]); //a1, a2, etc...
     }
-    printChunks("MAIN", main);
-    printChunks("PEND", pend);
-
+    // printChunks("MAIN", main);
+    // printChunks("PEND", pend);
 
     // ------------------------------------------------------------
     // 4. INSERT PENDING CHUNKS INTO MAIN CHUNKS
     // ------------------------------------------------------------
-//     std::sort(main.begin(), main.end(), [](const Chunk &a, const Chunk &b) {
-//     if (less_than(a.numbers.back(), b.numbers.back())) return true;
-//     if (a.numbers.back() == b.numbers.back() && a.id < b.id) return true;
-//     return false;
-// });
 
-// -------------------------------
-// Insert pending chunks into main using binary search + ID tie-breaking
-    // size_t jac = 3;
-    // size_t jac_prev = 1;
-
-    // while (!pend.empty()) {
-    //     size_t amount = jac - jac_prev;
-
-    //     for (size_t i = 0; i < amount && !pend.empty(); ++i) {
-    //         Chunk toInsert = pend.front();
-
-    //         // Binary search with maxima + ID tie-breaking
-    //         auto it = std::lower_bound(main.begin(), main.end(), toInsert,
-    //             [](const Chunk &c, const Chunk &pending) {
-    //                 // 'true' means 'c' is less than 'pending' (search continues)
-    //                 if (less_than(c.numbers.back(), pending.numbers.back()))
-    //                     return true;
-    //                 if (c.numbers.back() == pending.numbers.back() && c.id < pending.id)
-    //                     return true;
-    //                 return false;
-    //             });
-
-    //         // Insert pending chunk at correct position
-    //         main.insert(it, toInsert);
-
-    //         // Remove from pending
-    //         pend.erase(pend.begin());
-    //     }
-
-    //     // Update Jacobsthal numbers for next batch
-    //     size_t jac_temp = jac + 2 * jac_prev;
-    //     jac_prev = jac;
-    //     jac = jac_temp;
-    // }
     size_t jac = 3;
     size_t jac_prev = 1;
-    while (!pend.empty()){
+
+    while (!pend.empty()) {
         size_t amount = jac - jac_prev;
-       for (size_t i = 0; i < amount && !pend.empty(); i++){
+        for (size_t i = 0; i < amount && !pend.empty(); ++i) {
             Chunk toInsert = pend.front();
-            int top_max = toInsert.numbers.back();
-            
-
-            auto it = main.begin();
-            for (; it != main.end(); ++it){
-                std::cout << "pend max = " << top_max << ", main max = " << it->numbers.back() << std::endl;
-                if (less_than( top_max , it->numbers.back()))
-                    break;
-            }
-
+            auto it = std::lower_bound(main.begin(), main.end(), toInsert,
+                [](const Chunk &c, const Chunk &pending) {
+                    if (less_than(c.numbers.back(), pending.numbers.back()))
+                        return true;
+                    if (c.numbers.back() == pending.numbers.back() && c.id < pending.id)
+                        return true;
+                    return false;
+                });
             main.insert(it, toInsert);
             pend.erase(pend.begin());
         }
@@ -147,7 +117,7 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
         jac_prev = jac;
         jac = jac_temp;
     }
-    printChunks("MAIN", main);
+    // printChunks("MAIN", main);
 
     // ------------------------------------------------------------
     // 5. PUSH EVERYTHING BACK INTO ORIGINAL VECTOR TOGETHER WITH THE LEFTOVERS
@@ -162,16 +132,128 @@ void sortRecursive(std::vector<int> &vec, size_t pair_size, bool& insert_stage)
     result.insert(result.end(), vec.begin() + leftovers_start, vec.end());
 
     vec = std::move(result);
-    std::cout << "VECTOR = ";
-    for (int n: vec)
-        std::cout << n << ' ';
-    std::cout << std::endl;
-
-
 }
 
 void PmergeMe::sortVector(std::vector<int> &vec) {
     bool insert_stage = false;
     sortRecursive(vec, 1, insert_stage);
-    std::cout <<"COMPARISON COUNT: " << comparison_count << std::endl;
+}
+
+
+
+
+
+
+// -----------
+// SORT DEQUE
+// -----------
+
+
+void sortRecursiveDeque(std::deque<int> &deq, size_t pair_size, bool& insert_stage)
+{
+
+    // ------------------------------------------------------------
+    // 1. FIRST PHASE: sort into chunks by pair size and swap chunks based on last number of each chunk (recursion here)
+    // ------------------------------------------------------------
+
+    if (insert_stage == false)
+    {
+        if (pair_size >= deq.size() / 2) {
+            insert_stage = true;
+            return;
+        }
+        size_t block_size = pair_size * 2;
+        for (size_t i = 0; i + block_size <= deq.size(); i += block_size) {
+            // if (i + pair_size * 2 > deq.size()) 
+            //     break;
+            size_t mid = i + pair_size;
+            size_t end = i + block_size;
+            if (less_than(deq[end - 1] , deq[mid - 1])) {
+                std::swap_ranges(
+                    deq.begin() + i,
+                    deq.begin() + mid,
+                    deq.begin() + mid
+                );
+            }
+        }
+        sortRecursiveDeque(deq, pair_size * 2, insert_stage);
+    }
+
+    // ------------------------------------------------------------
+    // 2. SECOND PHASE: build chunks of numbers based on recursion level
+    // ------------------------------------------------------------
+
+    std::deque<Chunk> temp; //this will hold all our numbers in their respective chuncks
+    size_t id_counter = 0;
+    for (size_t i = 0; i + pair_size <= deq.size(); i += pair_size) {
+        Chunk c;
+        c.id = id_counter++;
+        c.numbers.insert(c.numbers.end(), deq.begin() + i, deq.begin() + i + pair_size);
+        temp.push_back(c);
+    }
+
+
+    // ------------------------------------------------------------
+    // 3. DIVIDE CHUNKS INTO MAIN AND PENDING for jacobsdahl insertion logic
+    // ------------------------------------------------------------
+
+    std::deque<Chunk> main;
+	std::deque<Chunk> pend;
+    for (size_t i = 0; i < temp.size(); ++i){
+        if (i == 0)
+            main.push_back(temp[i]); //b1
+        else if (i % 2 == 0)
+            pend.push_back(temp[i]); //b2, b3, etc...
+        else
+            main.push_back(temp[i]); //a1, a2, etc...
+    }
+    // printChunks("MAIN", main);
+    // printChunks("PEND", pend);
+
+    // ------------------------------------------------------------
+    // 4. INSERT PENDING CHUNKS INTO MAIN CHUNKS
+    // ------------------------------------------------------------
+
+    size_t jac = 3;
+    size_t jac_prev = 1;
+
+    while (!pend.empty()) {
+        size_t amount = jac - jac_prev;
+        for (size_t i = 0; i < amount && !pend.empty(); ++i) {
+            Chunk toInsert = pend.front();
+            auto it = std::lower_bound(main.begin(), main.end(), toInsert,
+                [](const Chunk &c, const Chunk &pending) {
+                    if (less_than(c.numbers.back(), pending.numbers.back()))
+                        return true;
+                    if (c.numbers.back() == pending.numbers.back() && c.id < pending.id)
+                        return true;
+                    return false;
+                });
+            main.insert(it, toInsert);
+            pend.erase(pend.begin());
+        }
+        size_t jac_temp = jac + 2 * jac_prev;
+        jac_prev = jac;
+        jac = jac_temp;
+    }
+    // printChunks("MAIN", main);
+
+    // ------------------------------------------------------------
+    // 5. PUSH EVERYTHING BACK INTO ORIGINAL VECTOR TOGETHER WITH THE LEFTOVERS
+    // ------------------------------------------------------------
+    std::deque<int> result;
+
+    for (const Chunk& c : main) {
+        result.insert(result.end(), c.numbers.begin(), c.numbers.end());
+    }
+
+    size_t leftovers_start = (deq.size() / pair_size) * pair_size;
+    result.insert(result.end(), deq.begin() + leftovers_start, deq.end());
+
+    deq = std::move(result);
+}
+
+void PmergeMe::sortDeque(std::deque<int> &deq) {
+    bool insert_stage = false;
+    sortRecursiveDeque(deq, 1, insert_stage);
 }

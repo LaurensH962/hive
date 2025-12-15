@@ -3,11 +3,12 @@
 #include <deque>
 #include <iostream>
 
+static int comparison_count = 0;
+
 struct Chunk { 
 	std::vector<int> numbers; 
 	size_t id; 
 };
-
 
 class PmergeMe {
 	public:
@@ -17,5 +18,7 @@ class PmergeMe {
 		~PmergeMe() = default;
 
 		static void sortVector(std::vector<int> &vec);
-		// static void sortDeque(std::deque<int> &deq);
+		static void sortDeque(std::deque<int> &deq);
 };
+
+void print_vec(std::vector<int>& vec);
